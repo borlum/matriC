@@ -48,9 +48,9 @@ matrix interchangeRows(matrix * entity, int row1, int row2);
 
 matrix addXTimesRowToRow(matrix * entity, float times, int row1, int row2);
 
-matrix toEchelonForm(matrix * entity);
+matrix toRowEchelonForm(matrix * entity);
 
-matrix toRowReducedEchelonForm(matrix * entity);
+matrix toReducedRowEchelonForm(matrix * entity);
 
 int timeNow();
 
@@ -88,11 +88,11 @@ int main(void){
 
     int t1 = timeNow();
 
-    matrix G = toEchelonForm(&A);
+    matrix G = toRowEchelonForm(&A);
     printf("%s\n", "|----------------ROW ECHELON FORM-----------------|");
     printMatrix(&G);
 
-    matrix F = toRowReducedEchelonForm(&G);
+    matrix F = toReducedRowEchelonForm(&G);
 
     int t2 = timeNow();
     int tDiff = t2-t1;
@@ -237,7 +237,7 @@ matrix addXTimesRowToRow(matrix * entity, float times, int row1, int row2){
     return product;    
 }
 
-matrix toEchelonForm(matrix * entity){
+matrix toRowEchelonForm(matrix * entity){
     matrix reduced = * entity;
 
     //Hvilken række vi er nået til - skal indkorporeres i et stort loop der wrapper det hele
@@ -285,7 +285,7 @@ matrix toEchelonForm(matrix * entity){
     return reduced;
 }
 
-matrix toRowReducedEchelonForm(matrix * entity){
+matrix toReducedRowEchelonForm(matrix * entity){
     matrix reduced = * entity;
     //Loop from bottom of matrix and up
     for (int n = reduced.m-1; n >= 0; n--){
