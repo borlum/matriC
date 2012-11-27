@@ -8,6 +8,8 @@
  */
 
 /*
+TODO + BUGS + DIV.
+==================
 (1) Problemer der måske kan opstå, er at vi i funktionerne
     har sat det op så man skal angive det egentlige række nummer,
     mens når vi looper, så har vi det som 0-indekseret.
@@ -25,7 +27,7 @@
 (6) Lave sammensatte matricer [A b]!
 
 (7) Herefter løse alle problemer vi kan blive stillet overfor i LIAL-eksamen
- */
+*/
 
 typedef struct {
     int m;
