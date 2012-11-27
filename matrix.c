@@ -2,6 +2,12 @@
 #include <sys/time.h>
 
 /*
+    RELEASED UNDER BEER-LICENSE!
+    Joakim Børlum Petersen
+    AAU
+ */
+
+/*
 (1) Problemer der måske kan opstå, er at vi i funktionerne
     har sat det op så man skal angive det egentlige række nummer,
     mens når vi looper, så har vi det som 0-indekseret.
