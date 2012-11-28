@@ -5,7 +5,7 @@
     RELEASED UNDER BEER-LICENSE!
     Joakim Børlum Petersen
     AAU
- */
+*/
 
 /*
 TODO + BUGS + DIV.
