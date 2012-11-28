@@ -42,6 +42,8 @@ void printMatrix(matrix * entity);
 
 float dotProduct(int row, int col, matrix * entity1, matrix * entity2);
 
+matrix concatMatrices(matrix * entity1, matrix * entity2);
+
 matrix multiplyMatrices(matrix * entity1, matrix * entity2);
 
 matrix scaleMatrixRow(matrix * entity, int row, float factor);
@@ -52,7 +54,7 @@ matrix addXTimesRowToRow(matrix * entity, float times, int row1, int row2);
 
 matrix toRowEchelonForm(matrix * entity);
 
-matrix toReducedRowEchelonForm(matrix * entity);
+matrix toReducedRowEchelonForm(matrix * entity); 
 
 int timeNow();
 
@@ -85,7 +87,22 @@ int main(void){
     A.matrix[2][2] = -1;
     A.matrix[2][3] = 3;
 
-    printf("|------------------INPUT(%ix%i)---------------------|\n", A.m, A.n);
+    matrix B;
+    B.m = 3;
+    B.n = 2;
+
+    B.matrix[0][0] = 1;
+    B.matrix[0][1] = 1;
+    B.matrix[1][0] = 1;
+    B.matrix[1][1] = 1;
+    B.matrix[2][0] = 1;
+    B.matrix[2][1] = 1;
+
+    matrix C = concatMatrices(&A, &B);
+
+    printMatrix(&C);
+
+    /*printf("|------------------INPUT(%ix%i)---------------------|\n", A.m, A.n);
     printMatrix(&A);
 
     int t1 = timeNow();
@@ -103,7 +120,7 @@ int main(void){
     printMatrix(&F);
     printf("%s\n", "|-------------------------------------------------|");
     printf("|------------It took %i microseconds!------------|\n", tDiff);
-    printf("%s\n", "|-------------------------------------------------|");
+    printf("%s\n", "|-------------------------------------------------|");*/
 }
 
 void fillMatrix(matrix * entity){
@@ -136,6 +153,24 @@ float dotProduct(int row, int col, matrix * entity1, matrix * entity2){
     for (int i = 0; i < entity1->n; i++){
         result += (entity1->matrix[row][i] * entity2->matrix[i][col]);
     }
+    return result;
+}
+
+matrix concatMatrices(matrix * entity1, matrix * entity2){
+    matrix result;
+    result.m = entity1->m;
+    result.n = entity1->n + entity2->n;
+
+    for (int i = 0; i < result.m; i++){
+        for (int j = 0; j < result.n; j++){
+            if (j < entity1->n){
+                result.matrix[i][j] = entity1->matrix[i][j];
+            } else {
+                result.matrix[i][j] = entity2->matrix[(result.m-1)-i][(result.n-1)-j];
+            }
+        }
+    }
+
     return result;
 }
 
