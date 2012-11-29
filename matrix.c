@@ -3,7 +3,7 @@
 
 /*
     RELEASED UNDER BEER-LICENSE!
-    Joakim Børlum Petersen
+    Joakim Børlum Petersen \ #roevhat
     AAU
 */
 
@@ -52,7 +52,9 @@ matrix addXTimesRowToRow(matrix * entity, float times, int row1, int row2);
 
 matrix toRowEchelonForm(matrix * entity);
 
-matrix toReducedRowEchelonForm(matrix * entity); 
+matrix toReducedRowEchelonForm(matrix * entity);
+
+matrix inverseOfMatrix(matrix * entity); 
 
 int matrixRank(matrix * entity);
 
@@ -72,22 +74,19 @@ int main(void){
     fillMatrix(&A);*/
 
     A.m = 3;
-    A.n = 4;
+    A.n = 3;
 
     A.matrix[0][0] = 1; 
     A.matrix[0][1] = 2;
     A.matrix[0][2] = 3;
-    A.matrix[0][3] = 9;
     
     A.matrix[1][0] = 2;
-    A.matrix[1][1] = -1;
-    A.matrix[1][2] = 1;
-    A.matrix[1][3] = 8;
+    A.matrix[1][1] = 5;
+    A.matrix[1][2] = 6;
 
     A.matrix[2][0] = 3;
-    A.matrix[2][1] = 0;
-    A.matrix[2][2] = -1;
-    A.matrix[2][3] = 3;
+    A.matrix[2][1] = 4;
+    A.matrix[2][2] = 8;
 
     matrix B;
     B.m = 3;
@@ -100,12 +99,16 @@ int main(void){
     B.matrix[2][0] = 1;
     B.matrix[2][1] = 1;
 
-    matrix C = concatMatrices(&A, &B);
+    matrix C = inverseOfMatrix(&A);
 
-    matrix D = transposeMatrix(&A);
-    printMatrix(&A);
-    printf("\n");
-    printMatrix(&D);
+    printMatrix(&C);
+
+    //matrix C = concatMatrices(&A, &B);
+
+    //matrix D = transposeMatrix(&A);
+    //printMatrix(&A);
+    //printf("\n");
+    //printMatrix(&D);
 
     /*printf("|------------------INPUT(%ix%i)---------------------|\n", A.m, A.n);
     printMatrix(&A);
@@ -417,6 +420,37 @@ matrix toReducedRowEchelonForm(matrix * entity){
         }
     }
     return reduced;
+}
+
+matrix inverseOfMatrix(matrix * entity){
+    matrix inverse;
+    inverse.m = entity->m;
+    inverse.n = entity->n;
+
+    matrix identity = identityMatrix(inverse.m, inverse.n);
+
+    matrix AI = concatMatrices(entity, &identity);
+
+    matrix temp = toRowEchelonForm(&AI);
+
+    matrix RB = toReducedRowEchelonForm(&temp);
+
+    printMatrix(&RB);
+    printf("\n");
+
+    for (int i = 0; i < RB.m; i++){
+        for (int j = 0; i < RB.n; j++){
+            if (j >= inverse.n){
+                inverse.matrix[i][j-inverse.n] = RB.matrix[i][j];
+            }
+        }
+    }
+
+    return inverse;
+
+
+
+
 }
 
 int matrixRank(matrix * entity){
