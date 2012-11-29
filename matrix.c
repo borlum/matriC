@@ -26,6 +26,8 @@ typedef struct {
     
 } matrix;
 
+matrix parseInput(char * argument);
+
 void fillMatrix(matrix * entity);
 
 void printMatrix(matrix * entity);
@@ -62,7 +64,12 @@ int matrixNullity(matrix * entity);
 
 int timeNow();
 
-int main(void){
+int main(int argc, char *argv[]){
+    if (argc != 2){
+        printf("%s\n", "matriC needs a matrix!");
+    } else {
+        matrix input = parseInput(argv[1]);
+    }
 
     matrix A;
 
@@ -129,6 +136,15 @@ int main(void){
     printf("%s\n", "|-------------------------------------------------|");
     printf("|------------It took %i microseconds!------------|\n", tDiff);
     printf("%s\n", "|-------------------------------------------------|");*/
+}
+
+matrix parseInput(char * argument){
+    matrix input;
+    printf("%s\n", argument);
+    //Parse string using strtok
+    //Fill up a matrix
+    //return it
+    return input;
 }
 
 void fillMatrix(matrix * entity){
@@ -447,10 +463,6 @@ matrix inverseOfMatrix(matrix * entity){
     }
 
     return inverse;
-
-
-
-
 }
 
 int matrixRank(matrix * entity){
