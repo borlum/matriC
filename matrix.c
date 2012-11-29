@@ -10,23 +10,13 @@
 /*
 TODO + BUGS + DIV.
 ==================
-(1) Problemer der måske kan opstå, er at vi i funktionerne
-    har sat det op så man skal angive det egentlige række nummer,
-    mens når vi looper, så har vi det som 0-indekseret.
-    Dette kan skabe forvirring, og bør nok blive ændret.
-    Vil nok være en fordel at lave det, så alle loops starter på 1 istedet?
+(X) Lav output funktioner, afhængige af matrix-størrelse osv
 
-(2) Bedre formattering af output!
+(X) Gem og læs fra fil. Nem format, så det er nemt at lave en matrix.
 
-(3) Lav output funktioner, afhængige af matrix-størrelse osv
+(X) Måske matlab-format / mathematica format? [n n n; n n n] eller {{n, n, n},{n, n, n}}
 
-(4) Gem og læs fra fil. Nem format, så det er nemt at lave en matrix.
-
-(5) Måske matlab-format / mathematica format? [n n n; n n n] eller {{n, n, n},{n, n, n}}
-
-(6) Lave sammensatte matricer [A b]!
-
-(7) Herefter løse alle problemer vi kan blive stillet overfor i LIAL-eksamen
+(X) Herefter løse alle problemer vi kan blive stillet overfor i LIAL-eksamen
 */
 
 typedef struct {
@@ -42,9 +32,17 @@ void printMatrix(matrix * entity);
 
 float dotProduct(int row, int col, matrix * entity1, matrix * entity2);
 
+matrix addMatrix(matrix * entity1, matrix * entity2);
+
+matrix scaleMatrix(matrix * entity, float scalar);
+
 matrix concatMatrices(matrix * entity1, matrix * entity2);
 
+matrix transposeMatrix(matrix * entity);
+
 matrix multiplyMatrices(matrix * entity1, matrix * entity2);
+
+matrix identityMatrix(int m, int n);
 
 matrix scaleMatrixRow(matrix * entity, int row, float factor);
 
@@ -55,6 +53,10 @@ matrix addXTimesRowToRow(matrix * entity, float times, int row1, int row2);
 matrix toRowEchelonForm(matrix * entity);
 
 matrix toReducedRowEchelonForm(matrix * entity); 
+
+int matrixRank(matrix * entity);
+
+int matrixNullity(matrix * entity);
 
 int timeNow();
 
@@ -100,7 +102,10 @@ int main(void){
 
     matrix C = concatMatrices(&A, &B);
 
-    printMatrix(&C);
+    matrix D = transposeMatrix(&A);
+    printMatrix(&A);
+    printf("\n");
+    printMatrix(&D);
 
     /*printf("|------------------INPUT(%ix%i)---------------------|\n", A.m, A.n);
     printMatrix(&A);
@@ -174,6 +179,48 @@ matrix concatMatrices(matrix * entity1, matrix * entity2){
     return result;
 }
 
+matrix addMatrix(matrix * entity1, matrix * entity2){
+    matrix result;
+    result.m = entity1->m;
+    result.n = entity1->n;
+
+    for (int i = 0; i < result.m; i++){
+        for (int j = 0; j < result.n; j++){
+            result.matrix[i][j] = entity1->matrix[i][j] + entity2->matrix[i][j];
+        }
+    }
+
+    return result;
+}
+
+matrix scaleMatrix(matrix * entity, float scalar){
+    matrix result;
+    result.m = entity->m;
+    result.n = entity->n;
+
+    for (int i = 0; i < result.m; i++){
+        for (int j = 0; j < result.n; j++){
+            result.matrix[i][j] = scalar * entity->matrix[i][j];
+        }
+    }
+
+    return result;
+}
+
+matrix transposeMatrix(matrix * entity){
+    matrix transpose;
+    transpose.m = entity->n;
+    transpose.n = entity->m;
+
+    for (int i = 0; i < transpose.m; i++){
+        for (int j = 0; j < transpose.n; j++){
+            transpose.matrix[i][j] = entity->matrix[j][i];
+        }
+    }
+
+    return transpose;
+}
+
 matrix multiplyMatrices(matrix * entity1, matrix * entity2){
     matrix product;
     product.m = entity1->m;
@@ -186,6 +233,24 @@ matrix multiplyMatrices(matrix * entity1, matrix * entity2){
         }
     }
     return product;
+}
+
+matrix identityMatrix(int m, int n){
+    matrix identity;
+    identity.m = m;
+    identity.n = n;
+
+    for (int i = 0; i < identity.m; i++){
+        for (int j = 0; j < identity.n; j++){
+            if (i == j){
+                identity.matrix[i][j] = 1;
+            } else {
+                identity.matrix[i][j] = 0;
+            }
+        }
+    }
+
+    return identity;
 }
 
 matrix scaleMatrixRow(matrix * entity, int row, float factor){
@@ -352,6 +417,33 @@ matrix toReducedRowEchelonForm(matrix * entity){
         }
     }
     return reduced;
+}
+
+int matrixRank(matrix * entity){
+    //Is also the number of pivot columns
+    int nonzeroRows = entity->m;
+
+    int nonZero = 0;
+
+    for (int i = 0; i < entity->m; i++){
+        nonZero = 0;
+        for (int j = 0; j < entity->n; j++){
+            if (entity->matrix[i][j] != 0){
+                nonZero = 1;
+            }
+        }
+
+        if (nonZero == 1){
+            nonzeroRows++;
+        }
+    }
+
+    return nonzeroRows;
+}
+
+int matrixNullity(matrix * entity){
+    //Is also the number of non-pivot columns
+    return entity->n - matrixRank(entity);
 }
 
 int timeNow(){
