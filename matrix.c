@@ -58,7 +58,7 @@ matrix toRowEchelonForm(matrix * entity);
 
 matrix toReducedRowEchelonForm(matrix * entity);
 
-matrix inverseOfMatrix(matrix * entity); 
+matrix inverseOfMatrix(matrix * entity);
 
 int matrixRank(matrix * entity);
 
@@ -66,32 +66,35 @@ int matrixNullity(matrix * entity);
 
 int timeNow();
 
+int outputRref(matrix * entity, int all, int timer);
+
+int outputInverse(matrix * entity, int all, int timer);
+
 int main(int argc, char *argv[]){
+    int timer = 0;
+    int all = 0;
+
     if (argc < 2){
         printf("%s\n", "matriC needs additional arguments!");
     } else {
-        if (strcmp(argv[1], "-rref") == 0){
+        if (strstr(argv[1], "t")){
+            timer = 1;
+        }
+
+        if (strstr(argv[1], "all")){
+            all = 1;
+        }
+
+        if (strstr(argv[1], "R")){
             matrix input = parseInput(argv[2]);
-            printf("|------------------INPUT(%ix%i)---------------------|\n", input.m, input.n);
-            printMatrix(&input);
-
-            int t1 = timeNow();
-
-            matrix rowEchelonForm = toRowEchelonForm(&input);
-            printf("%s\n", "|----------------ROW ECHELON FORM-----------------|");
-            printMatrix(&rowEchelonForm);
-
-            matrix reducedRowEchelonForm = toReducedRowEchelonForm(&rowEchelonForm);
-
-            int t2 = timeNow();
-            int tDiff = t2-t1;
-
-            printf("%s\n", "|------------REDUCED ROW ECHELON FORM-------------|");
-            printMatrix(&reducedRowEchelonForm);
-            printf("%s\n", "|-------------------------------------------------|");
-            printf("|------------It took %i microseconds!------------|\n", tDiff);
-            printf("%s\n", "|-------------------------------------------------|");
-
+            outputRref(&input, all, timer);
+        } else if (strstr(argv[1], "I")){
+            matrix input = parseInput(argv[2]);
+            outputInverse(&input, all, timer);
+        } else {
+            printf("%s\n", "matriC needs a primary function specified as an argument:");
+            printf("%s\n", "    -> R (reduced row echelon form)");
+            printf("%s\n", "    -> I (inverse)");
         }      
     }
 }
@@ -110,12 +113,11 @@ matrix parseInput(char * argument1){
     int maxCol = 0;
 
     while(parsed != NULL) {
-
         input.matrix[row][col] = atoi(parsed);
 
         col++;
 
-        if (parsed[1] == ';'){
+        if (strstr(parsed, ";")){
             row++;
             if (col > maxCol){
                 maxCol = col;
@@ -434,15 +436,12 @@ matrix inverseOfMatrix(matrix * entity){
     inverse.n = entity->n;
 
     matrix identity = identityMatrix(inverse.m, inverse.n);
-
     matrix AI = concatMatrices(entity, &identity);
-
     matrix temp = toRowEchelonForm(&AI);
-
     matrix RB = toReducedRowEchelonForm(&temp);
 
     for (int i = 0; i < RB.m; i++){
-        for (int j = 0; i < RB.n; j++){
+        for (int j = 0; j < RB.n; j++){
             if (j >= inverse.n){
                 inverse.matrix[i][j-inverse.n] = RB.matrix[i][j];
             }
@@ -454,7 +453,7 @@ matrix inverseOfMatrix(matrix * entity){
 
 int matrixRank(matrix * entity){
     //Is also the number of pivot columns
-    int nonzeroRows = entity->m;
+    int nonzeroRows = 0;
 
     int nonZero = 0;
 
@@ -485,4 +484,84 @@ int timeNow(){
     int time1 = (tv1.tv_sec) * 1000 * 1000 + (tv1.tv_usec);
 
     return time1;
+}
+
+int outputRref(matrix * entity, int all, int timer){
+    if (all){
+        printf("{INPUT(%ix%i)}\n", entity->m, entity->n);
+        printf("\n");
+        printMatrix(entity);
+        printf("\n");
+    }
+
+    int t1 = timeNow();
+
+    matrix rowEchelonForm = toRowEchelonForm(entity);
+
+    if (all){
+        printf("%s\n", "{ROW ECHELON FORM}");
+        printf("\n");
+        printMatrix(&rowEchelonForm);
+        printf("\n");
+    }
+
+    matrix reducedRowEchelonForm = toReducedRowEchelonForm(&rowEchelonForm);
+
+    int t2 = timeNow();
+    int tDiff = t2-t1;
+
+    if (all){
+        printf("%s\n", "{REDUCED ROW ECHELON FORM}");
+        printf("\n");
+    }
+
+    printMatrix(&reducedRowEchelonForm);
+
+    if (all){
+        printf("\n");
+        printf("%s\n", "{RANK AND NULLITY}");
+        printf("Rank is %i and nullity is %i\n", matrixRank(&reducedRowEchelonForm), matrixNullity(&reducedRowEchelonForm));
+    }
+
+    if (timer){
+        printf("\n");
+        printf("%s\n", "{TIMER}");
+        printf("It took %i microseconds!\n", tDiff);
+        printf("\n");
+    }
+
+    return 1;
+}
+
+int outputInverse(matrix * entity, int all, int timer){
+    if (all){
+        printf("{INPUT(%ix%i)}\n", entity->m, entity->n);
+        printf("\n");
+        printMatrix(entity);
+        printf("\n");
+    }
+
+    int t1 = timeNow();
+
+    matrix inverse = inverseOfMatrix(entity);
+
+    int t2 = timeNow();
+    int tDiff = t2-t1;
+
+    if (all){
+        printf("%s\n", "{INVERSE OF MATRIX}");
+        printf("\n");
+    }
+
+    printMatrix(&inverse);
+
+    if (timer){
+        printf("\n");
+        printf("%s\n", "{TIMER}");
+        printf("It took %i microseconds!\n", tDiff);
+        printf("\n");
+    }
+
+    return 1;
+
 }
