@@ -170,7 +170,7 @@ matrix parseInput(char * argument1, int isFile){
             }
             col = 0;
         }
-        
+
         parsed = strtok(NULL, delims);
 
     }
