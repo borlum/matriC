@@ -30,7 +30,7 @@ The order at which you pass the arguments is meaningless; this is just as valid:
     ma3c -tallR (input)
 
 The input argument is per default specified as a matrix in matlab format ([1 2 3; 5 6 7;]).
-Though the format is very strict at this point, so you have to include a trailing semi-colon:
+Though the format is very strict at this point, so you have to include a trailing semicolon:
 
     ma3c -R "[1 2 3; 4 5 6;]"
 
