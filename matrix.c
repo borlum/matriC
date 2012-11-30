@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 
 /*
@@ -26,7 +28,7 @@ typedef struct {
     
 } matrix;
 
-matrix parseInput(char * argument);
+matrix parseInput(char * argument1);
 
 void fillMatrix(matrix * entity);
 
@@ -69,6 +71,7 @@ int main(int argc, char *argv[]){
         printf("%s\n", "matriC needs a matrix!");
     } else {
         matrix input = parseInput(argv[1]);
+        printMatrix(&input);
     }
 
     matrix A;
@@ -108,7 +111,7 @@ int main(int argc, char *argv[]){
 
     matrix C = inverseOfMatrix(&A);
 
-    printMatrix(&C);
+    //printMatrix(&C);
 
     //matrix C = concatMatrices(&A, &B);
 
@@ -138,12 +141,43 @@ int main(int argc, char *argv[]){
     printf("%s\n", "|-------------------------------------------------|");*/
 }
 
-matrix parseInput(char * argument){
+matrix parseInput(char * argument1){
     matrix input;
-    printf("%s\n", argument);
-    //Parse string using strtok
-    //Fill up a matrix
-    //return it
+
+    char * parsed = NULL;
+    char delims[] = " ][";
+
+    parsed = strtok(argument1, delims);
+
+    int row = 0;
+    int col = 0;
+
+    int maxCol = 0;
+
+    while(parsed != NULL) {
+
+        input.matrix[row][col] = atoi(parsed);
+
+        col++;
+
+        if (parsed[1] == ';'){
+            row++;
+            if (col > maxCol){
+                maxCol = col;
+            }
+            col = 0;
+        }
+
+        parsed = strtok(NULL, delims);
+
+    }
+    //This might need optimization for more defensive programming.. But what the heck!
+    //The problem is ";" initiates new row. So having it at the end of the matrix, means we need to
+    //do like this
+    input.m = row;
+    //Else we need to say that input.m = row+1
+    input.n = maxCol;
+
     return input;
 }
 
@@ -450,9 +484,6 @@ matrix inverseOfMatrix(matrix * entity){
     matrix temp = toRowEchelonForm(&AI);
 
     matrix RB = toReducedRowEchelonForm(&temp);
-
-    printMatrix(&RB);
-    printf("\n");
 
     for (int i = 0; i < RB.m; i++){
         for (int j = 0; i < RB.n; j++){
