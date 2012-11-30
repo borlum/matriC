@@ -360,12 +360,13 @@ matrix toRowEchelonForm(matrix * entity){
             for (int i = n; i < reduced.m; i++){
                 if (reduced.matrix[i][j] != 0){
                     isNonzero = 1;
-                    if (j < colNumber){
+                    if (j <= colNumber){
                         colNumber = j;
                         rowNumber = i;
                         if (n != rowNumber){
                             reduced = interchangeRows(&reduced, n+1, rowNumber+1);
                         }
+
                         //IF != 1 make leading entry == 1
                         if (reduced.matrix[n][colNumber] != 1){
                             float factor = 1/reduced.matrix[n][colNumber];
