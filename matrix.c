@@ -67,78 +67,33 @@ int matrixNullity(matrix * entity);
 int timeNow();
 
 int main(int argc, char *argv[]){
-    if (argc != 2){
-        printf("%s\n", "matriC needs a matrix!");
+    if (argc < 2){
+        printf("%s\n", "matriC needs additional arguments!");
     } else {
-        matrix input = parseInput(argv[1]);
-        printMatrix(&input);
+        if (strcmp(argv[1], "-rref") == 0){
+            matrix input = parseInput(argv[2]);
+            printf("|------------------INPUT(%ix%i)---------------------|\n", input.m, input.n);
+            printMatrix(&input);
+
+            int t1 = timeNow();
+
+            matrix rowEchelonForm = toRowEchelonForm(&input);
+            printf("%s\n", "|----------------ROW ECHELON FORM-----------------|");
+            printMatrix(&rowEchelonForm);
+
+            matrix reducedRowEchelonForm = toReducedRowEchelonForm(&rowEchelonForm);
+
+            int t2 = timeNow();
+            int tDiff = t2-t1;
+
+            printf("%s\n", "|------------REDUCED ROW ECHELON FORM-------------|");
+            printMatrix(&reducedRowEchelonForm);
+            printf("%s\n", "|-------------------------------------------------|");
+            printf("|------------It took %i microseconds!------------|\n", tDiff);
+            printf("%s\n", "|-------------------------------------------------|");
+
+        }      
     }
-
-    matrix A;
-
-/*    printf("How many rows? (m) \n");
-    scanf("%i", &A.m);
-    printf("How many columns? (n) \n");
-    scanf("%i", &A.n);
-
-    fillMatrix(&A);*/
-
-    A.m = 3;
-    A.n = 3;
-
-    A.matrix[0][0] = 1; 
-    A.matrix[0][1] = 2;
-    A.matrix[0][2] = 3;
-    
-    A.matrix[1][0] = 2;
-    A.matrix[1][1] = 5;
-    A.matrix[1][2] = 6;
-
-    A.matrix[2][0] = 3;
-    A.matrix[2][1] = 4;
-    A.matrix[2][2] = 8;
-
-    matrix B;
-    B.m = 3;
-    B.n = 2;
-
-    B.matrix[0][0] = 1;
-    B.matrix[0][1] = 1;
-    B.matrix[1][0] = 1;
-    B.matrix[1][1] = 1;
-    B.matrix[2][0] = 1;
-    B.matrix[2][1] = 1;
-
-    matrix C = inverseOfMatrix(&A);
-
-    //printMatrix(&C);
-
-    //matrix C = concatMatrices(&A, &B);
-
-    //matrix D = transposeMatrix(&A);
-    //printMatrix(&A);
-    //printf("\n");
-    //printMatrix(&D);
-
-    /*printf("|------------------INPUT(%ix%i)---------------------|\n", A.m, A.n);
-    printMatrix(&A);
-
-    int t1 = timeNow();
-
-    matrix G = toRowEchelonForm(&A);
-    printf("%s\n", "|----------------ROW ECHELON FORM-----------------|");
-    printMatrix(&G);
-
-    matrix F = toReducedRowEchelonForm(&G);
-
-    int t2 = timeNow();
-    int tDiff = t2-t1;
-
-    printf("%s\n", "|------------REDUCED ROW ECHELON FORM-------------|");
-    printMatrix(&F);
-    printf("%s\n", "|-------------------------------------------------|");
-    printf("|------------It took %i microseconds!------------|\n", tDiff);
-    printf("%s\n", "|-------------------------------------------------|");*/
 }
 
 matrix parseInput(char * argument1){
