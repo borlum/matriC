@@ -24,7 +24,9 @@ typedef struct {
     
 } matrix;
 
-matrix parseInput(char * argument1);
+matrix parseInput(char * argument1, int isFile);
+
+matrix parseFile(char * argument1);
 
 void fillMatrix(matrix * entity);
 
@@ -69,10 +71,12 @@ int outputInverse(matrix * entity, int all, int timer);
 int main(int argc, char *argv[]){
     int timer = 0;
     int all = 0;
+    int file = 0;
 
     if (argc < 2){
         printf("%s\n", "matriC needs additional arguments!");
     } else {
+
         if (strstr(argv[1], "t")){
             timer = 1;
         }
@@ -81,12 +85,28 @@ int main(int argc, char *argv[]){
             all = 1;
         }
 
+        if (strstr(argv[1], "f")){
+            file = 1;
+        }
+
         if (strstr(argv[1], "R")){
-            matrix input = parseInput(argv[2]);
+            matrix input;
+            if (file){
+                input = parseInput(argv[2], 1);
+            } else {
+                input = parseInput(argv[2], 0);
+            }
             outputRref(&input, all, timer);
+
         } else if (strstr(argv[1], "I")){
-            matrix input = parseInput(argv[2]);
+            matrix input;
+            if (file){
+                input = parseInput(argv[2], 1);
+            } else {
+                input = parseInput(argv[2], 0);
+            }
             outputInverse(&input, all, timer);
+
         } else {
             printf("%s\n", "matriC needs a primary function specified as an argument:");
             printf("%s\n", "    -> R (reduced row echelon form)");
@@ -95,13 +115,43 @@ int main(int argc, char *argv[]){
     }
 }
 
-matrix parseInput(char * argument1){
+matrix parseInput(char * argument1, int isFile){
     matrix input;
+
+    char * argStr;
+
+    //FILE SPECIFIC VARIABLES
+    char fileStr[200];
+    char * pStr;
+    FILE * file;
+
+    if (isFile){
+        //Open file for reading
+        file = fopen(argument1, "r");
+        if (file == NULL){
+            printf("%s\n", "matriC could not find the file you specified.");
+            return identityMatrix(0,0);
+        }
+
+        pStr = fgets(fileStr, 199, file);
+        if (pStr == NULL){
+            printf("%s\n", "matriC found the file to be empty.");
+            return identityMatrix(0,0);
+        }
+
+        fclose(file);
+
+    } else {
+        argStr = argument1;
+    }
 
     char * parsed = NULL;
     char delims[] = " ][";
-
-    parsed = strtok(argument1, delims);
+    if (isFile){
+        parsed = strtok(fileStr, delims);
+    } else {
+        parsed = strtok(argStr, delims);
+    }
 
     int row = 0;
     int col = 0;
@@ -120,7 +170,7 @@ matrix parseInput(char * argument1){
             }
             col = 0;
         }
-
+        
         parsed = strtok(NULL, delims);
 
     }
