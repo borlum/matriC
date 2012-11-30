@@ -12,11 +12,7 @@
 /*
 TODO + BUGS + DIV.
 ==================
-(X) Lav output funktioner, afhængige af matrix-størrelse osv
-
 (X) Gem og læs fra fil. Nem format, så det er nemt at lave en matrix.
-
-(X) Måske matlab-format / mathematica format? [n n n; n n n] eller {{n, n, n},{n, n, n}}
 
 (X) Herefter løse alle problemer vi kan blive stillet overfor i LIAL-eksamen
 */
