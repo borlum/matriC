@@ -9,7 +9,12 @@ TODO + BUGS + DIV.
 ==================
 (X) Gem til fil.
 
+(X) Vis alle steps i reduktioner
+
 (X) Herefter løse alle problemer vi kan blive stillet overfor i LIAL-eksamen
+    -> Determinant, og herefter alt egenvektor og egenværdi-halløjet især
+    -> Måske finde en cool måde at lave sets på? Ellers bare som matrix.
+    -> Wootz.
 */
 
 #include <stdio.h>
