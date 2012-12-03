@@ -7,7 +7,7 @@
 /*
 TODO + BUGS + DIV.
 ==================
-(X) Gem og læs fra fil. Nem format, så det er nemt at lave en matrix.
+(X) Gem til fil.
 
 (X) Herefter løse alle problemer vi kan blive stillet overfor i LIAL-eksamen
 */
@@ -74,8 +74,8 @@ float absolute(float n);
 
 int main(int argc, char *argv[]){
     int timer = 0;
-    int all = 0;
-    int file = 0;
+    int all   = 0;
+    int file  = 0;
 
     if (argc < 2){
         printf("%s\n", "matriC needs additional arguments!");
@@ -123,7 +123,7 @@ matrix parseInput(char * argument1, int isFile){
     matrix input;
 
     char * argStr;
-
+    
     //FILE SPECIFIC VARIABLES
     char fileStr[200];
     char * pStr;
@@ -157,9 +157,9 @@ matrix parseInput(char * argument1, int isFile){
         parsed = strtok(argStr, delims);
     }
 
-    int row = 0;
-    int col = 0;
-
+    int row    = 0;
+    int col    = 0;
+    
     int maxCol = 0;
 
     while(parsed != NULL) {
@@ -325,8 +325,7 @@ matrix scaleMatrixRow(matrix * entity, int row, float factor){
 
     //Generate elementary matrix
     for (int i = 0; i < scale.m; i++){
-        for (int j = 0; j < scale.n; j++)
-        {
+        for (int j = 0; j < scale.n; j++){
             if (i == (row - 1) && j == (row - 1)){
                 scale.matrix[i][j] = factor;
             } else if (i == j){
@@ -351,15 +350,12 @@ matrix interchangeRows(matrix * entity, int row1, int row2){
 
     //Generate identity matrix
     for (int i = 0; i < interchange.m; i++){
-        for (int j = 0; j < interchange.n; j++)
-        {
-
+        for (int j = 0; j < interchange.n; j++){
             if (i == j){
                 interchange.matrix[i][j] = 1;
             } else {
                 interchange.matrix[i][j] = 0;
             }
-
         }
     }
 
@@ -408,7 +404,7 @@ matrix toRowEchelonForm(matrix * entity){
     //Hvilken række vi er nået til - skal indkorporeres i et stort loop der wrapper det hele
     for (int n = 0; n < reduced.m; n++){
         //Determine the leftmost nonzero column => Pivot column. Topmost position in this column is pivot position.
-        int isNonzero  = 0;
+        int isNonzero = 0;
         int colNumber = reduced.n-1;
         int rowNumber = reduced.m-1;
         for (int j = 0; j < reduced.n; j++){
@@ -507,9 +503,9 @@ matrix inverseOfMatrix(matrix * entity){
     inverse.n = entity->n;
 
     matrix identity = identityMatrix(inverse.m, inverse.n);
-    matrix AI = concatMatrices(entity, &identity);
-    matrix temp = toRowEchelonForm(&AI);
-    matrix RB = toReducedRowEchelonForm(&temp);
+    matrix AI       = concatMatrices(entity, &identity);
+    matrix temp     = toRowEchelonForm(&AI);
+    matrix RB       = toReducedRowEchelonForm(&temp);
 
     for (int i = 0; i < RB.m; i++){
         for (int j = 0; j < RB.n; j++){
@@ -525,8 +521,7 @@ matrix inverseOfMatrix(matrix * entity){
 int matrixRank(matrix * entity){
     //Is also the number of pivot columns
     int nonzeroRows = 0;
-
-    int nonZero = 0;
+    int nonZero     = 0;
 
     for (int i = 0; i < entity->m; i++){
         nonZero = 0;
@@ -578,7 +573,7 @@ int outputRref(matrix * entity, int all, int timer){
 
     matrix reducedRowEchelonForm = toReducedRowEchelonForm(&rowEchelonForm);
 
-    int t2 = timeNow();
+    int t2    = timeNow();
     int tDiff = t2-t1;
 
     if (all){
@@ -616,7 +611,7 @@ int outputInverse(matrix * entity, int all, int timer){
 
     matrix inverse = inverseOfMatrix(entity);
 
-    int t2 = timeNow();
+    int t2    = timeNow();
     int tDiff = t2-t1;
 
     if (all){
