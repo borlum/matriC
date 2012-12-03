@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/time.h>
-
 /*
     RELEASED UNDER BEER-LICENSE!
     Joakim Børlum Petersen \ #roevhat
@@ -16,6 +11,13 @@ TODO + BUGS + DIV.
 
 (X) Herefter løse alle problemer vi kan blive stillet overfor i LIAL-eksamen
 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/time.h>
+
+#define ERROR_LIMIT 0.000010
 
 typedef struct {
     int m;
@@ -67,6 +69,8 @@ int timeNow();
 int outputRref(matrix * entity, int all, int timer);
 
 int outputInverse(matrix * entity, int all, int timer);
+
+float absolute(float n);
 
 int main(int argc, char *argv[]){
     int timer = 0;
@@ -284,10 +288,11 @@ matrix multiplyMatrices(matrix * entity1, matrix * entity2){
 
     for (int i = 0; i < product.m; i++){
         for (int j = 0; j < product.n; j++)
-        {
+        {   
             product.matrix[i][j] = dotProduct(i, j, entity1, entity2);
         }
     }
+
     return product;
 }
 
@@ -391,8 +396,10 @@ matrix addXTimesRowToRow(matrix * entity, float times, int row1, int row2){
     }
 
     addtorow.matrix[row2 - 1][row1 - 1] = times;
+
     product = multiplyMatrices(&addtorow, entity);
-    return product;    
+
+    return product; 
 }
 
 matrix toRowEchelonForm(matrix * entity){
@@ -406,6 +413,12 @@ matrix toRowEchelonForm(matrix * entity){
         int rowNumber = reduced.m-1;
         for (int j = 0; j < reduced.n; j++){
             for (int i = n; i < reduced.m; i++){
+
+                //If very close to zero, we make it zero.
+                if (absolute(reduced.matrix[i][j]) < ERROR_LIMIT){
+                    reduced.matrix[i][j] = 0;
+                }
+
                 if (reduced.matrix[i][j] != 0){
                     isNonzero = 1;
                     if (j <= colNumber){
@@ -413,12 +426,16 @@ matrix toRowEchelonForm(matrix * entity){
                         rowNumber = i;
                         if (n != rowNumber){
                             reduced = interchangeRows(&reduced, n+1, rowNumber+1);
+                            //printf("Interchange rows %i and %i: \n", n+1, rowNumber+1);
+                            //printMatrix(&reduced);
                         }
 
                         //IF != 1 make leading entry == 1
                         if (reduced.matrix[n][colNumber] != 1){
-                            float factor = 1/reduced.matrix[n][colNumber];
+                            float factor = 1/(reduced.matrix[n][colNumber]);
                             reduced = scaleMatrixRow(&reduced, n+1, factor);
+                            //printf("Scale row %i with factor %f: \n", n+1, factor);
+                            //printMatrix(&reduced);
                         }
 
                         //Make all entries below == 0!
@@ -432,7 +449,9 @@ matrix toRowEchelonForm(matrix * entity){
                                 float colValue = reduced.matrix[k][colNumber];
                                 float multiple = (-colValue)/pivotValue;
 
-                                reduced = addXTimesRowToRow(&reduced, multiple, n+1, k+1);        
+                                reduced = addXTimesRowToRow(&reduced, multiple, n+1, k+1);
+                                //printf("Add %f times row %i to row %i: \n", multiple, n+1, k+1);
+                                //printMatrix(&reduced);        
                             }
                         }
                     }
@@ -457,6 +476,12 @@ matrix toReducedRowEchelonForm(matrix * entity){
 
                 //Make all above entries = 0
                 for (int j = n-1; j >= 0; j--){
+                    
+                    //If very close to zero, we make it zero.
+                    if (absolute(reduced.matrix[j][i]) < ERROR_LIMIT){
+                        reduced.matrix[j][i] = 0;
+                    }
+                    
                     if (reduced.matrix[j][i] != 0){
                         //Find the appropriate multiple
                         //And add to make the value = 0
@@ -610,4 +635,8 @@ int outputInverse(matrix * entity, int all, int timer){
 
     return 1;
 
+}
+
+float absolute(float n){
+    return n < 0 ? 0-n : n;
 }
