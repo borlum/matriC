@@ -69,6 +69,12 @@ int matrixRank(matrix * entity);
 
 int matrixNullity(matrix * entity);
 
+float twoXtwoDeterminat(matrix * entity);
+
+matrix deleteIJ(matrix * entity, int row, int col);
+
+float cofactorExpansion(matrix * entity, int row);
+
 int timeNow();
 
 int outputRref(matrix * entity, int all, int timer);
@@ -116,10 +122,23 @@ int main(int argc, char *argv[]){
             }
             outputInverse(&input, all, timer);
 
+        } else if (strstr(argv[1], "D")){
+            matrix input;
+            if (file){
+                input = parseInput(argv[2], 1);
+            } else {
+                input = parseInput(argv[2], 0);
+            }
+            //float result = twoXtwoDeterminat(&input);
+            //printf("det(INPUT) = %f\n", result);
+            matrix result = deleteIJ(&input, 3, 3);
+            printMatrix(&result);
+
         } else {
             printf("%s\n", "matriC needs a primary function specified as an argument:");
             printf("%s\n", "    -> R (reduced row echelon form)");
             printf("%s\n", "    -> I (inverse)");
+            printf("%s\n", "    -> D (determinant)");
         }      
     }
 }
@@ -547,6 +566,37 @@ int matrixRank(matrix * entity){
 int matrixNullity(matrix * entity){
     //Is also the number of non-pivot columns
     return entity->n - matrixRank(entity);
+}
+
+float twoXtwoDeterminat(matrix * entity){
+    float a = entity->matrix[0][0];
+    float b = entity->matrix[0][1];
+    float c = entity->matrix[1][0];
+    float d = entity->matrix[1][1];
+
+    return (a*d)-(b*c);
+}
+
+matrix deleteIJ(matrix * entity, int row, int col){
+    matrix sub;
+    sub.n = entity->n-1;
+    sub.m = entity->m-1;
+
+    //i1 = taeller for sub
+    //i2 = taeller for entity
+
+    for (int i1 = 0, i2 = 0; i1 < sub.n, i2 < entity->n; i2++){
+        if (i2 != row-1){
+            for (int j1 = 0, j2 = 0; j1 < sub.m, j2 < entity->m; j2++){
+                if (j2 != col-1){
+                    sub.matrix[i1][j1] = entity->matrix[i2][j2];
+                    j1++;
+                }
+            }
+            i1++;
+        }
+    }
+    return sub;
 }
 
 int timeNow(){
