@@ -552,7 +552,7 @@ int matrixNullity(matrix * entity){
 int timeNow(){
     struct timeval tv1;
     gettimeofday(&tv1, NULL);
-    int time1 = (tv1.tv_sec) * 1000 * 1000 + (tv1.tv_usec);
+    int time1 = (tv1.tv_sec) * 1000000 + (tv1.tv_usec);
 
     return time1;
 }
