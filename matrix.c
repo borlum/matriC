@@ -131,8 +131,8 @@ int main(int argc, char *argv[]){
             }
             //float result = twoXtwoDeterminat(&input);
             //printf("det(INPUT) = %f\n", result);
-            matrix result = deleteIJ(&input, 3, 3);
-            printMatrix(&result);
+            float result = cofactorExpansion(&input, 1);
+            printf("det(INPUT) = %f\n", result);
 
         } else {
             printf("%s\n", "matriC needs a primary function specified as an argument:");
@@ -597,6 +597,35 @@ matrix deleteIJ(matrix * entity, int row, int col){
         }
     }
     return sub;
+}
+
+float cofactorExpansion(matrix * entity, int row){
+    float determinant;
+    matrix sub;
+    float detSub;
+    int sign = 1;
+
+
+    for (int i = 0; i < entity->n; i++){
+        if (i % 2 == 0){
+            sign = 1;
+        } else {
+            sign = -1;
+        }
+        sub = deleteIJ(entity, row, i+1);
+
+        if (sub.n == 2){
+            detSub = twoXtwoDeterminat(&sub);
+        } else {
+            detSub = cofactorExpansion(&sub, row);
+        }
+
+        determinant += sign * (entity->matrix[row-1][i] * detSub);
+        //printf("Mellem resultat: %f\n", sign * (entity->matrix[row-1][i] * detSub));
+    }
+
+    return determinant;
+
 }
 
 int timeNow(){
