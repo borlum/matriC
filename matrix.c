@@ -9,10 +9,8 @@ TODO + BUGS + DIV.
 ==================
 (X) Gem til fil.
 
-(X) Vis alle steps i reduktioner
-
 (X) Herefter løse alle problemer vi kan blive stillet overfor i LIAL-eksamen
-    -> Determinant, og herefter alt egenvektor og egenværdi-halløjet især
+    -> Alt egenvektor og egenværdi-halløjet især
     -> Måske finde en cool måde at lave sets på? Ellers bare som matrix.
     -> Wootz.
 */
@@ -59,9 +57,9 @@ matrix interchangeRows(matrix * entity, int row1, int row2);
 
 matrix addXTimesRowToRow(matrix * entity, float times, int row1, int row2);
 
-matrix toRowEchelonForm(matrix * entity);
+matrix toRowEchelonForm(matrix * entity, int verbose);
 
-matrix toReducedRowEchelonForm(matrix * entity);
+matrix toReducedRowEchelonForm(matrix * entity, int verbose);
 
 matrix inverseOfMatrix(matrix * entity);
 
@@ -80,6 +78,8 @@ int timeNow();
 int outputRref(matrix * entity, int all, int timer);
 
 int outputInverse(matrix * entity, int all, int timer);
+
+int outputDet(matrix * entity, int all, int timer);
 
 float absolute(float n);
 
@@ -129,11 +129,7 @@ int main(int argc, char *argv[]){
             } else {
                 input = parseInput(argv[2], 0);
             }
-            //float result = twoXtwoDeterminat(&input);
-            //printf("det(INPUT) = %f\n", result);
-            float result = cofactorExpansion(&input, 1);
-            printf("det(INPUT) = %f\n", result);
-
+            outputDet(&input, all, timer);
         } else {
             printf("%s\n", "matriC needs a primary function specified as an argument:");
             printf("%s\n", "    -> R (reduced row echelon form)");
@@ -422,7 +418,7 @@ matrix addXTimesRowToRow(matrix * entity, float times, int row1, int row2){
     return product; 
 }
 
-matrix toRowEchelonForm(matrix * entity){
+matrix toRowEchelonForm(matrix * entity, int verbose){
     matrix reduced = * entity;
 
     //Hvilken række vi er nået til - skal indkorporeres i et stort loop der wrapper det hele
@@ -446,16 +442,22 @@ matrix toRowEchelonForm(matrix * entity){
                         rowNumber = i;
                         if (n != rowNumber){
                             reduced = interchangeRows(&reduced, n+1, rowNumber+1);
-                            //printf("Interchange rows %i and %i: \n", n+1, rowNumber+1);
-                            //printMatrix(&reduced);
+                            if (verbose){
+                                printf("Interchange rows %i and %i: \n", n+1, rowNumber+1);
+                                printMatrix(&reduced);
+                                printf("\n");
+                            }
                         }
 
                         //IF != 1 make leading entry == 1
                         if (reduced.matrix[n][colNumber] != 1){
                             float factor = 1/(reduced.matrix[n][colNumber]);
                             reduced = scaleMatrixRow(&reduced, n+1, factor);
-                            //printf("Scale row %i with factor %f: \n", n+1, factor);
-                            //printMatrix(&reduced);
+                            if (verbose){
+                                printf("Scale row %i with factor %f: \n", n+1, factor);
+                                printMatrix(&reduced);
+                                printf("\n");
+                            }
                         }
 
                         //Make all entries below == 0!
@@ -470,8 +472,11 @@ matrix toRowEchelonForm(matrix * entity){
                                 float multiple = (-colValue)/pivotValue;
 
                                 reduced = addXTimesRowToRow(&reduced, multiple, n+1, k+1);
-                                //printf("Add %f times row %i to row %i: \n", multiple, n+1, k+1);
-                                //printMatrix(&reduced);        
+                                if (verbose){
+                                    printf("Add %f times row %i to row %i: \n", multiple, n+1, k+1);
+                                    printMatrix(&reduced);
+                                    printf("\n"); 
+                                }       
                             }
                         }
                     }
@@ -483,7 +488,7 @@ matrix toRowEchelonForm(matrix * entity){
     return reduced;
 }
 
-matrix toReducedRowEchelonForm(matrix * entity){
+matrix toReducedRowEchelonForm(matrix * entity, int verbose){
     matrix reduced = * entity;
     //Loop from bottom of matrix and up
     for (int n = reduced.m-1; n >= 0; n--){
@@ -510,6 +515,12 @@ matrix toReducedRowEchelonForm(matrix * entity){
                         float multiple = -(colValue);
 
                         reduced = addXTimesRowToRow(&reduced, multiple, n+1, j+1);
+
+                        if (verbose){
+                            printf("Add %f times row %i to row %i: \n", multiple, n+1, j+1);
+                            printMatrix(&reduced);
+                            printf("\n"); 
+                        }
                     }
                 }
 
@@ -528,8 +539,8 @@ matrix inverseOfMatrix(matrix * entity){
 
     matrix identity = identityMatrix(inverse.m, inverse.n);
     matrix AI       = concatMatrices(entity, &identity);
-    matrix temp     = toRowEchelonForm(&AI);
-    matrix RB       = toReducedRowEchelonForm(&temp);
+    matrix temp     = toRowEchelonForm(&AI, 0);
+    matrix RB       = toReducedRowEchelonForm(&temp, 0);
 
     for (int i = 0; i < RB.m; i++){
         for (int j = 0; j < RB.n; j++){
@@ -600,9 +611,9 @@ matrix deleteIJ(matrix * entity, int row, int col){
 }
 
 float cofactorExpansion(matrix * entity, int row){
-    float determinant;
+    float determinant = 0;
     matrix sub;
-    float detSub;
+    float detSub = 0;
     int sign = 1;
 
 
@@ -621,7 +632,6 @@ float cofactorExpansion(matrix * entity, int row){
         }
 
         determinant += sign * (entity->matrix[row-1][i] * detSub);
-        //printf("Mellem resultat: %f\n", sign * (entity->matrix[row-1][i] * detSub));
     }
 
     return determinant;
@@ -646,7 +656,12 @@ int outputRref(matrix * entity, int all, int timer){
 
     int t1 = timeNow();
 
-    matrix rowEchelonForm = toRowEchelonForm(entity);
+    matrix rowEchelonForm;
+    if (all){
+        rowEchelonForm = toRowEchelonForm(entity, 1);
+    } else {
+        rowEchelonForm = toRowEchelonForm(entity, 0);
+    }
 
     if (all){
         printf("%s\n", "{ROW ECHELON FORM}");
@@ -655,7 +670,14 @@ int outputRref(matrix * entity, int all, int timer){
         printf("\n");
     }
 
-    matrix reducedRowEchelonForm = toReducedRowEchelonForm(&rowEchelonForm);
+    matrix reducedRowEchelonForm;
+
+    if (all){
+        reducedRowEchelonForm = toReducedRowEchelonForm(&rowEchelonForm, 1);
+    } else {
+        reducedRowEchelonForm = toReducedRowEchelonForm(&rowEchelonForm, 0);
+    }
+    
 
     int t2    = timeNow();
     int tDiff = t2-t1;
@@ -715,6 +737,41 @@ int outputInverse(matrix * entity, int all, int timer){
     return 1;
 
 }
+
+int outputDet(matrix * entity, int all, int timer){
+    if (all){
+        printf("{INPUT(%ix%i)}\n", entity->m, entity->n);
+        printf("\n");
+        printMatrix(entity);
+        printf("\n");
+    }
+
+    int t1 = timeNow();
+
+    float det = cofactorExpansion(entity, 1);
+
+    int t2    = timeNow();
+    int tDiff = t2-t1;
+
+    if (all){
+        printf("%s\n", "{DETERMINANT OF MATRIX}");
+        printf("\n");
+    }
+
+    printf("det(INPUT) = %f\n", det);
+
+    if (timer){
+        printf("\n");
+        printf("%s\n", "{TIMER}");
+        printf("It took %i microseconds!\n", tDiff);
+        printf("\n");
+    }
+
+    return 1;
+
+}
+
+
 
 float absolute(float n){
     return n < 0 ? 0-n : n;
