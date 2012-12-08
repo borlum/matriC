@@ -291,7 +291,6 @@ matrix toRowEchelonForm(matrix * entity, int verbose){
     //Hvilken række vi er nået til - skal indkorporeres i et stort loop der wrapper det hele
     for (int n = 0; n < reduced.m; n++){
         //Determine the leftmost nonzero column => Pivot column. Topmost position in this column is pivot position.
-        int isNonzero = 0;
         int colNumber = reduced.n-1;
         int rowNumber = reduced.m-1;
         for (int j = 0; j < reduced.n; j++){
@@ -303,7 +302,6 @@ matrix toRowEchelonForm(matrix * entity, int verbose){
                 }
 
                 if (reduced.matrix[i][j] != 0){
-                    isNonzero = 1;
                     if (j <= colNumber){
                         colNumber = j;
                         rowNumber = i;
@@ -360,11 +358,11 @@ matrix toReducedRowEchelonForm(matrix * entity, int verbose){
     //Loop from bottom of matrix and up
     for (int n = reduced.m-1; n >= 0; n--){
         //Loop row
-        int colNumber = reduced.n-1;
+        //int colNumber = reduced.n-1;
         for (int i = 0; i < reduced.n; i++){
             //If row != 0:
             if (reduced.matrix[n][i] == 1){
-                colNumber = i;
+                //colNumber = i;
 
                 //Make all above entries = 0
                 for (int j = n-1; j >= 0; j--){
@@ -463,9 +461,9 @@ matrix deleteIJ(matrix * entity, int row, int col){
     //i1 = taeller for sub
     //i2 = taeller for entity
 
-    for (int i1 = 0, i2 = 0; i1 < sub.n, i2 < entity->n; i2++){
+    for (int i1 = 0, i2 = 0; i1 < sub.n || i2 < entity->n; i2++){
         if (i2 != row-1){
-            for (int j1 = 0, j2 = 0; j1 < sub.m, j2 < entity->m; j2++){
+            for (int j1 = 0, j2 = 0; j1 < sub.m || j2 < entity->m; j2++){
                 if (j2 != col-1){
                     sub.matrix[i1][j1] = entity->matrix[i2][j2];
                     j1++;
