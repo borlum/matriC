@@ -1,3 +1,9 @@
+/*
+    RELEASED UNDER BEER-LICENSE!
+    Joakim Børlum Petersen \ #roevhat
+    AAU
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

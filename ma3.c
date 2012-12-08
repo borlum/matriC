@@ -33,9 +33,18 @@ int main(int argc, char *argv[]){
     int timer = 0;
     int all   = 0;
     int file  = 0;
+    matrix input;
 
     if (argc < 2){
         printf("%s\n", "matriC needs additional arguments!");
+        printf("%s\n", "Specify a primary function as an argument:");
+        printf("%s\n", "    -> R (reduced row echelon form)");
+        printf("%s\n", "    -> I (inverse)");
+        printf("%s\n", "    -> D (determinant)");
+        printf("%s\n", "Additional arguments:");
+        printf("%s\n", "    -> t (add timer)");
+        printf("%s\n", "    -> all (verbose output)");
+        printf("%s\n", "    -> f (specify a file instead of inline matrix)");
     } else {
 
         if (strstr(argv[1], "t")){
@@ -51,7 +60,6 @@ int main(int argc, char *argv[]){
         }
 
         if (strstr(argv[1], "R")){
-            matrix input;
             if (file){
                 input = parseInput(argv[2], 1);
             } else {
@@ -60,7 +68,6 @@ int main(int argc, char *argv[]){
             outputRref(&input, all, timer);
 
         } else if (strstr(argv[1], "I")){
-            matrix input;
             if (file){
                 input = parseInput(argv[2], 1);
             } else {
@@ -69,7 +76,6 @@ int main(int argc, char *argv[]){
             outputInverse(&input, all, timer);
 
         } else if (strstr(argv[1], "D")){
-            matrix input;
             if (file){
                 input = parseInput(argv[2], 1);
             } else {
@@ -215,5 +221,4 @@ int outputDet(matrix * entity, int all, int timer){
     }
 
     return 1;
-
 }
