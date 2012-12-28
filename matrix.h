@@ -8,10 +8,9 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
+#include <stdio.h>
 
 #define ERROR_LIMIT 0.000010
 
@@ -29,6 +28,8 @@ matrix parseFile(char * argument1);
 void fillMatrix(matrix * entity);
 
 void printMatrix(matrix * entity);
+
+void fprintMatrix(FILE * file, matrix * entity);
 
 float dotProduct(int row, int col, matrix * entity1, matrix * entity2);
 

@@ -16,13 +16,12 @@ TODO + BUGS + DIV.
 (X) Herefter løse alle problemer vi kan blive stillet overfor i LIAL-eksamen
     -> Alt egenvektor og egenværdi-halløjet især
     -> Måske finde en cool måde at lave sets på? Ellers bare som matrix.
-    -> Wootz.
+    -> Lave log til JSON-format, så programmet vil kunne bruges som API!
 */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/time.h>
+/* ---Magic library--- */
 #include "matrix.h"
 
 int timeNow();
@@ -103,7 +102,39 @@ int timeNow(){
     return time1;
 }
 
+int logResult(matrix * entity){
+
+    FILE * file = fopen("output.log","a");
+
+    if (file == NULL) {
+        printf("File does exist!");
+        return 0;
+    }
+
+    fprintMatrix(file, entity);
+ 
+    fclose(file);
+
+    return 1;
+}
+
 int outputRref(matrix * entity, int all, int timer){
+
+    FILE * file = fopen("output.log","a");
+
+    if (file == NULL) {
+        printf("File does exist!");
+        return 0;
+    }
+
+    fprintf(file, "<================BEGIN================>\n\n");
+
+    //This is atm very ugly.. But it was a quick and dirty implementation!!
+    fprintf(file, "{INPUT(%ix%i)}\n", entity->m, entity->n);
+    fprintf(file, "\n");
+    fprintMatrix(file, entity);
+    fprintf(file, "\n");
+
     if (all){
         printf("{INPUT(%ix%i)}\n", entity->m, entity->n);
         printf("\n");
@@ -114,11 +145,18 @@ int outputRref(matrix * entity, int all, int timer){
     int t1 = timeNow();
 
     matrix rowEchelonForm;
+
     if (all){
         rowEchelonForm = toRowEchelonForm(entity, 1);
     } else {
         rowEchelonForm = toRowEchelonForm(entity, 0);
     }
+
+    //This is atm very ugly.. But it was a quick and dirty implementation!!
+    fprintf(file, "%s\n", "{ROW ECHELON FORM}");
+    fprintf(file, "\n");
+    fprintMatrix(file, &rowEchelonForm);
+    fprintf(file, "\n");
 
     if (all){
         printf("%s\n", "{ROW ECHELON FORM}");
@@ -139,12 +177,23 @@ int outputRref(matrix * entity, int all, int timer){
     int t2    = timeNow();
     int tDiff = t2-t1;
 
+    //This is atm very ugly.. But it was a quick and dirty implementation!!
+    fprintf(file, "%s\n", "{REDUCED ROW ECHELON FORM}");
+    fprintf(file, "\n");
+
     if (all){
         printf("%s\n", "{REDUCED ROW ECHELON FORM}");
         printf("\n");
     }
 
+    //This is atm very ugly.. But it was a quick and dirty implementation!!
+    fprintMatrix(file, &reducedRowEchelonForm);
     printMatrix(&reducedRowEchelonForm);
+
+    //This is atm very ugly.. But it was a quick and dirty implementation!!
+    fprintf(file, "\n");
+    fprintf(file, "%s\n", "{RANK AND NULLITY}");
+    fprintf(file, "Rank is %i and nullity is %i\n", matrixRank(&reducedRowEchelonForm), matrixNullity(&reducedRowEchelonForm));
 
     if (all){
         printf("\n");
@@ -152,12 +201,23 @@ int outputRref(matrix * entity, int all, int timer){
         printf("Rank is %i and nullity is %i\n", matrixRank(&reducedRowEchelonForm), matrixNullity(&reducedRowEchelonForm));
     }
 
+    //This is atm very ugly.. But it was a quick and dirty implementation!!
+    fprintf(file, "\n");
+    fprintf(file, "%s\n", "{TIMER}");
+    fprintf(file, "It took %i microseconds!\n", tDiff);
+    fprintf(file, "\n");
+
     if (timer){
         printf("\n");
         printf("%s\n", "{TIMER}");
         printf("It took %i microseconds!\n", tDiff);
         printf("\n");
     }
+
+    //This is atm very ugly.. But it was a quick and dirty implementation!!
+    fprintf(file, "<=================END=================>\n");
+
+    fclose(file);
 
     return 1;
 }

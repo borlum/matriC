@@ -8,13 +8,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/time.h>
 #include "matrix.h"
-
-
 
 matrix parseInput(char * argument1, int isFile){
     matrix input;
@@ -107,6 +101,20 @@ void printMatrix(matrix * entity){
             }
         }
         printf("|\n");
+    }
+}
+
+void fprintMatrix(FILE * file, matrix * entity){
+    for(int i = 0; i < entity->m; i++){
+        fprintf(file, "| ");
+        for(int j = 0; j < entity->n; j++){
+            if (entity->matrix[i][j] < 0){
+                fprintf(file, " %f  ", entity->matrix[i][j]);
+            } else {
+                fprintf(file, "  %f  ", entity->matrix[i][j]);
+            }
+        }
+        fprintf(file, "|\n");
     }
 }
 
