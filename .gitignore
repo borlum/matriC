@@ -1,2 +1,4 @@
-# Executables
+# Executables and objects!
 *.out
+*.o
+*.log
