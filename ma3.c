@@ -11,26 +11,30 @@
 /*
 TODO + BUGS + DIV.
 ==================
-(X) Gem til fil.
-
-(X) Herefter løse alle problemer vi kan blive stillet overfor i LIAL-eksamen
-    -> Alt egenvektor og egenværdi-halløjet især
-    -> Måske finde en cool måde at lave sets på? Ellers bare som matrix.
-    -> Lave log til JSON-format, så programmet vil kunne bruges som API!
+    (X) Logge til JSON! :D
+    ( ) Alt egenvektor og egenværdi-halløjet
+    ( ) Måske finde en cool måde at lave sets på?
 */
 
 #include <stdio.h>
 #include <sys/time.h>
+#include <time.h>
 /* ---Magic library--- */
 #include "matrix.h"
 
-int timeNow();
+int timeNowUsec();
+
+int timeNowSec();
+
+unsigned long timestampNow();
 
 int outputRref(matrix * entity, int all, int timer);
 
 int outputInverse(matrix * entity, int all, int timer);
 
 int outputDet(matrix * entity, int all, int timer);
+
+int logToJSON(matrix * input, matrix * output, int runtime, char * tag);
 
 int main(int argc, char *argv[]){
     int timer = 0;
@@ -94,46 +98,42 @@ int main(int argc, char *argv[]){
     }
 }
 
-int timeNow(){
-    struct timeval tv1;
-    gettimeofday(&tv1, NULL);
-    int time1 = (tv1.tv_sec) * 1000000 + (tv1.tv_usec);
+int timeNowUsec(){
+    //Struct for holding elapsed time!
+    struct timeval now;
 
-    return time1;
+    gettimeofday(&now, NULL);
+
+    return (now.tv_sec) * 1000000 + (now.tv_usec);
 }
 
-int logResult(matrix * entity){
+unsigned long timestampNow(){
 
-    FILE * file = fopen("output.log","a");
+    char timestamp[32];
 
-    if (file == NULL) {
-        printf("File does exist!");
-        return 0;
-    }
+    //Epoch time datatype!
+    time_t currentTime;
 
-    fprintMatrix(file, entity);
- 
-    fclose(file);
+    //A calendar struct!
+    struct tm * ts;
+    
+    //Grab current Epoch time ->
+    currentTime = time(NULL);
 
-    return 1;
+    //Turn it into localtime and set calendar struct = it
+    ts = localtime(&currentTime);
+
+    //Remember its calendar time => Add +1 to month, +1900 to year
+    sprintf(timestamp,"%02i%02i%i%02i%02i%02i", ts->tm_mday, ts->tm_mon+1, ts->tm_year+1900, ts->tm_hour, ts->tm_min, ts->tm_sec);
+
+    //We first make a char array with the timestamp, then turn it into an unsigned long.
+    //This may seem stupid, since we need to turn it back into a char array for later use,
+    //but I really don't like the idea of having to set a global variable, for just holding a timestamp!
+
+    return strtoul(timestamp, NULL, 10);
 }
 
 int outputRref(matrix * entity, int all, int timer){
-
-    FILE * file = fopen("output.log","a");
-
-    if (file == NULL) {
-        printf("File does exist!");
-        return 0;
-    }
-
-    fprintf(file, "<================BEGIN================>\n\n");
-
-    //This is atm very ugly.. But it was a quick and dirty implementation!!
-    fprintf(file, "{INPUT(%ix%i)}\n", entity->m, entity->n);
-    fprintf(file, "\n");
-    fprintMatrix(file, entity);
-    fprintf(file, "\n");
 
     if (all){
         printf("{INPUT(%ix%i)}\n", entity->m, entity->n);
@@ -142,7 +142,7 @@ int outputRref(matrix * entity, int all, int timer){
         printf("\n");
     }
 
-    int t1 = timeNow();
+    int t1 = timeNowUsec();
 
     matrix rowEchelonForm;
 
@@ -151,12 +151,6 @@ int outputRref(matrix * entity, int all, int timer){
     } else {
         rowEchelonForm = toRowEchelonForm(entity, 0);
     }
-
-    //This is atm very ugly.. But it was a quick and dirty implementation!!
-    fprintf(file, "%s\n", "{ROW ECHELON FORM}");
-    fprintf(file, "\n");
-    fprintMatrix(file, &rowEchelonForm);
-    fprintf(file, "\n");
 
     if (all){
         printf("%s\n", "{ROW ECHELON FORM}");
@@ -173,39 +167,21 @@ int outputRref(matrix * entity, int all, int timer){
         reducedRowEchelonForm = toReducedRowEchelonForm(&rowEchelonForm, 0);
     }
     
-
-    int t2    = timeNow();
+    int t2    = timeNowUsec();
     int tDiff = t2-t1;
-
-    //This is atm very ugly.. But it was a quick and dirty implementation!!
-    fprintf(file, "%s\n", "{REDUCED ROW ECHELON FORM}");
-    fprintf(file, "\n");
 
     if (all){
         printf("%s\n", "{REDUCED ROW ECHELON FORM}");
         printf("\n");
     }
 
-    //This is atm very ugly.. But it was a quick and dirty implementation!!
-    fprintMatrix(file, &reducedRowEchelonForm);
     printMatrix(&reducedRowEchelonForm);
-
-    //This is atm very ugly.. But it was a quick and dirty implementation!!
-    fprintf(file, "\n");
-    fprintf(file, "%s\n", "{RANK AND NULLITY}");
-    fprintf(file, "Rank is %i and nullity is %i\n", matrixRank(&reducedRowEchelonForm), matrixNullity(&reducedRowEchelonForm));
 
     if (all){
         printf("\n");
         printf("%s\n", "{RANK AND NULLITY}");
         printf("Rank is %i and nullity is %i\n", matrixRank(&reducedRowEchelonForm), matrixNullity(&reducedRowEchelonForm));
     }
-
-    //This is atm very ugly.. But it was a quick and dirty implementation!!
-    fprintf(file, "\n");
-    fprintf(file, "%s\n", "{TIMER}");
-    fprintf(file, "It took %i microseconds!\n", tDiff);
-    fprintf(file, "\n");
 
     if (timer){
         printf("\n");
@@ -214,15 +190,14 @@ int outputRref(matrix * entity, int all, int timer){
         printf("\n");
     }
 
-    //This is atm very ugly.. But it was a quick and dirty implementation!!
-    fprintf(file, "<=================END=================>\n");
-
-    fclose(file);
+    //logToJSON -> input, output, runtime, tag
+    logToJSON(entity, &reducedRowEchelonForm, tDiff, "rref");
 
     return 1;
 }
 
 int outputInverse(matrix * entity, int all, int timer){
+
     if (all){
         printf("{INPUT(%ix%i)}\n", entity->m, entity->n);
         printf("\n");
@@ -230,11 +205,11 @@ int outputInverse(matrix * entity, int all, int timer){
         printf("\n");
     }
 
-    int t1 = timeNow();
+    int t1 = timeNowUsec();
 
     matrix inverse = inverseOfMatrix(entity);
 
-    int t2    = timeNow();
+    int t2    = timeNowUsec();
     int tDiff = t2-t1;
 
     if (all){
@@ -251,6 +226,9 @@ int outputInverse(matrix * entity, int all, int timer){
         printf("\n");
     }
 
+    //logToJSON -> input, output, runtime, tag
+    logToJSON(entity, &inverse, tDiff, "inverse");
+
     return 1;
 
 }
@@ -263,11 +241,11 @@ int outputDet(matrix * entity, int all, int timer){
         printf("\n");
     }
 
-    int t1 = timeNow();
+    int t1 = timeNowUsec();
 
     float det = cofactorExpansion(entity, 1);
 
-    int t2    = timeNow();
+    int t2    = timeNowUsec();
     int tDiff = t2-t1;
 
     if (all){
@@ -285,4 +263,85 @@ int outputDet(matrix * entity, int all, int timer){
     }
 
     return 1;
+}
+
+int logToJSON(matrix * input, matrix * output, int runtime, char * tag){
+
+    unsigned long timestamp = timestampNow();
+    char filepath[32];
+    
+    sprintf(filepath,"%lu.json", timestamp);
+
+    FILE * file = fopen(filepath,"a");
+
+    if (file == NULL) {
+        printf("File does exist!");
+        return 0;
+    }
+
+    fprintf(file, "{");
+
+    //Log input-matrix
+
+    fprintf(file, "\"input\": [");
+
+    for (int i = 0; i < input->m; i++){
+
+        fprintf(file, "[");
+
+        for (int j = 0; j < input->n; j++){
+            if (j == input->n -1){
+                fprintf(file, "%f", input->matrix[i][j]);   
+            } else {
+                fprintf(file, "%f, ", input->matrix[i][j]);
+            }
+        }
+
+        if (i == input->m -1){
+            fprintf(file, "]");
+        } else {
+            fprintf(file, "], ");
+        }
+
+    }
+
+    fprintf(file, "], ");
+
+    //Log output-matrix
+
+    fprintf(file, "\"output\": [");
+    
+    for (int i = 0; i < output->m; i++){
+
+        fprintf(file, "[");
+
+        for (int j = 0; j < output->n; j++){
+            if (j == output->n -1){
+                fprintf(file, "%f", output->matrix[i][j]);   
+            } else {
+                fprintf(file, "%f, ", output->matrix[i][j]);
+            }
+        }
+
+        if (i == output->m -1){
+            fprintf(file, "]");
+        } else {
+            fprintf(file, "], ");
+        }
+
+    }
+
+    fprintf(file, "], ");
+
+    //Log runtime, tag, timestamp
+    fprintf(file, "\"tag\": \"%s\", ", tag);
+    fprintf(file, "\"timestamp\": %lu, ", timestamp);
+    fprintf(file, "\"runtime\": %i", runtime);
+
+    fprintf(file, "}");
+
+    fclose(file);
+
+    return 1;
+
 }
