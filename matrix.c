@@ -95,9 +95,9 @@ void printMatrix(matrix * entity){
         printf("| ");
         for(int j = 0; j < entity->n; j++){
             if (entity->matrix[i][j] < 0){
-                printf(" %f  ", entity->matrix[i][j]);
+                printf(" %7.3f ", entity->matrix[i][j]);
             } else {
-                printf("  %f  ", entity->matrix[i][j]);
+                printf(" %7.3f ", entity->matrix[i][j]);
             }
         }
         printf("|\n");
