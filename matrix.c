@@ -10,8 +10,7 @@
 
 #include "matrix.h"
 
-matrix parseInput(char * argument1, int isFile){
-    matrix input;
+int parseInput(matrix * output, char * input, int isFile){
 
     char * argStr;
     
@@ -22,22 +21,22 @@ matrix parseInput(char * argument1, int isFile){
 
     if (isFile){
         //Open file for reading
-        file = fopen(argument1, "r");
+        file = fopen(input, "r");
         if (file == NULL){
             printf("%s\n", "matriC could not find the file you specified.");
-            return identityMatrix(0,0);
+            return 0;
         }
 
         pStr = fgets(fileStr, 199, file);
         if (pStr == NULL){
             printf("%s\n", "matriC found the file to be empty.");
-            return identityMatrix(0,0);
+            return 0;
         }
 
         fclose(file);
 
     } else {
-        argStr = argument1;
+        argStr = input;
     }
 
     char * parsed = NULL;
@@ -54,7 +53,7 @@ matrix parseInput(char * argument1, int isFile){
     int maxCol = 0;
 
     while(parsed != NULL) {
-        input.matrix[row][col] = atoi(parsed);
+        output->matrix[row][col] = atoi(parsed);
 
         col++;
 
@@ -72,11 +71,11 @@ matrix parseInput(char * argument1, int isFile){
     //This might need optimization for more defensive programming.. But what the heck!
     //The problem is ";" initiates new row. So having it at the end of the matrix, means we need to
     //do like this
-    input.m = row;
-    //Else we need to say that input.m = row+1
-    input.n = maxCol;
+    output->m = row;
+    //Else we need to say that output->m = row+1
+    output->n = maxCol;
 
-    return input;
+    return 1;
 }
 
 void fillMatrix(matrix * entity){
@@ -104,18 +103,30 @@ void printMatrix(matrix * entity){
     }
 }
 
-void fprintMatrix(FILE * file, matrix * entity){
+int fprintMatrix(FILE * file, matrix * entity){
     for(int i = 0; i < entity->m; i++){
-        fprintf(file, "| ");
+        
+        if(!fprintf(file, "| ")){
+            return 0;
+        }
+
         for(int j = 0; j < entity->n; j++){
             if (entity->matrix[i][j] < 0){
-                fprintf(file, " %f  ", entity->matrix[i][j]);
+                if(!fprintf(file, " %f  ", entity->matrix[i][j])){
+                    return 0;
+                }
             } else {
-                fprintf(file, "  %f  ", entity->matrix[i][j]);
+                if(!fprintf(file, "  %f  ", entity->matrix[i][j])){
+                    return 0;
+                }
             }
         }
-        fprintf(file, "|\n");
+        if(!fprintf(file, "|\n")){
+            return 0;
+        }
     }
+
+    return 1;
 }
 
 float dotProduct(int row, int col, matrix * entity1, matrix * entity2){
@@ -126,104 +137,112 @@ float dotProduct(int row, int col, matrix * entity1, matrix * entity2){
     return result;
 }
 
-matrix concatMatrices(matrix * entity1, matrix * entity2){
-    matrix result;
-    result.m = entity1->m;
-    result.n = entity1->n + entity2->n;
+//Forslået ny struktur
 
-    for (int i = 0; i < result.m; i++){
-        for (int j = 0; j < result.n; j++){
+int concatMatrices(matrix * result, matrix * entity1, matrix * entity2){
+    
+    if (entity1->m != entity2->m){
+        return 0;
+    }
+
+    result->m = entity1->m;
+    result->n = entity1->n + entity2->n;
+
+    for (int i = 0; i < result->m; i++){
+        for (int j = 0; j < result->n; j++){
             if (j < entity1->n){
-                result.matrix[i][j] = entity1->matrix[i][j];
+                result->matrix[i][j] = entity1->matrix[i][j];
             } else {
-                result.matrix[i][j] = entity2->matrix[(result.m-1)-i][(result.n-1)-j];
+                result->matrix[i][j] = entity2->matrix[(result->m-1)-i][(result->n-1)-j];
             }
         }
     }
 
-    return result;
+    return 1;
 }
 
-matrix addMatrix(matrix * entity1, matrix * entity2){
-    matrix result;
-    result.m = entity1->m;
-    result.n = entity1->n;
+int addMatrix(matrix * result, matrix * entity1, matrix * entity2){
+    
+    if (!(entity1->m == entity2->m && entity1->n == entity2->n)){
+        return 0;
+    }
 
-    for (int i = 0; i < result.m; i++){
-        for (int j = 0; j < result.n; j++){
-            result.matrix[i][j] = entity1->matrix[i][j] + entity2->matrix[i][j];
+    result->m = entity1->m;
+    result->n = entity1->n;
+
+    for (int i = 0; i < result->m; i++){
+        for (int j = 0; j < result->n; j++){
+            result->matrix[i][j] = entity1->matrix[i][j] + entity2->matrix[i][j];
         }
     }
 
-    return result;
+    return 1;
 }
 
-matrix scaleMatrix(matrix * entity, float scalar){
-    matrix result;
-    result.m = entity->m;
-    result.n = entity->n;
+int scaleMatrix(matrix * result, matrix * entity, float scalar){
+    result->m = entity->m;
+    result->n = entity->n;
 
-    for (int i = 0; i < result.m; i++){
-        for (int j = 0; j < result.n; j++){
-            result.matrix[i][j] = scalar * entity->matrix[i][j];
+    for (int i = 0; i < result->m; i++){
+        for (int j = 0; j < result->n; j++){
+            result->matrix[i][j] = scalar * entity->matrix[i][j];
         }
     }
 
-    return result;
+    return 1;
 }
 
-matrix transposeMatrix(matrix * entity){
-    matrix transpose;
-    transpose.m = entity->n;
-    transpose.n = entity->m;
+int transposeMatrix(matrix * transpose, matrix * entity){
+    transpose->m = entity->n;
+    transpose->n = entity->m;
 
-    for (int i = 0; i < transpose.m; i++){
-        for (int j = 0; j < transpose.n; j++){
-            transpose.matrix[i][j] = entity->matrix[j][i];
+    for (int i = 0; i < transpose->m; i++){
+        for (int j = 0; j < transpose->n; j++){
+            transpose->matrix[i][j] = entity->matrix[j][i];
         }
     }
 
-    return transpose;
+    return 1;
 }
 
-matrix multiplyMatrices(matrix * entity1, matrix * entity2){
-    matrix product;
-    product.m = entity1->m;
-    product.n = entity2->n;
+int multiplyMatrices(matrix * product, matrix * entity1, matrix * entity2){
+    product->m = entity1->m;
+    product->n = entity2->n;
 
-    for (int i = 0; i < product.m; i++){
-        for (int j = 0; j < product.n; j++)
+    for (int i = 0; i < product->m; i++){
+        for (int j = 0; j < product->n; j++)
         {   
-            product.matrix[i][j] = dotProduct(i, j, entity1, entity2);
+            product->matrix[i][j] = dotProduct(i, j, entity1, entity2);
         }
     }
 
-    return product;
+    return 1;
 }
 
-matrix identityMatrix(int m, int n){
-    matrix identity;
-    identity.m = m;
-    identity.n = n;
+int identityMatrix(matrix * identity, int m, int n){
 
-    for (int i = 0; i < identity.m; i++){
-        for (int j = 0; j < identity.n; j++){
+    if (m == 0 && n == 0){
+        return 0;
+    }
+
+    identity->m = m;
+    identity->n = n;
+
+    for (int i = 0; i < identity->m; i++){
+        for (int j = 0; j < identity->n; j++){
             if (i == j){
-                identity.matrix[i][j] = 1;
+                identity->matrix[i][j] = 1;
             } else {
-                identity.matrix[i][j] = 0;
+                identity->matrix[i][j] = 0;
             }
         }
     }
 
-    return identity;
+    return 1;
 }
 
-matrix scaleMatrixRow(matrix * entity, int row, float factor){
-    matrix product, scale;
-
-    product.m = entity->m;
-    product.n = entity->n;
+int scaleMatrixRow(matrix * entity, int row, float factor){
+    matrix scale;
 
     scale.m = entity->m;
     scale.n = entity->m;
@@ -240,15 +259,12 @@ matrix scaleMatrixRow(matrix * entity, int row, float factor){
             }
         }
     }
-    product = multiplyMatrices(&scale, entity);
-    return product;
+    
+    return multiplyMatrices(entity, &scale, entity);
 }
 
-matrix interchangeRows(matrix * entity, int row1, int row2){
-    matrix product, interchange;
-
-    product.m = entity->m;
-    product.n = entity->n;
+int interchangeRows(matrix * entity, int row1, int row2){
+    matrix interchange;
 
     interchange.m = entity->m;
     interchange.n = entity->m;
@@ -269,15 +285,11 @@ matrix interchangeRows(matrix * entity, int row1, int row2){
     interchange.matrix[row1 - 1][row1 - 1] = 0;
     interchange.matrix[row2 - 1][row2 - 1] = 0;
 
-    product = multiplyMatrices(&interchange, entity);
-    return product;
+    return multiplyMatrices(entity, &interchange, entity);
 }
 
-matrix addXTimesRowToRow(matrix * entity, float times, int row1, int row2){
-    matrix product, addtorow;
-
-    product.m = entity->m;
-    product.n = entity->n;
+int addXTimesRowToRow(matrix * entity, float times, int row1, int row2){
+    matrix addtorow;
 
     addtorow.m = entity->m;
     addtorow.n = entity->m;
@@ -298,12 +310,10 @@ matrix addXTimesRowToRow(matrix * entity, float times, int row1, int row2){
 
     addtorow.matrix[row2 - 1][row1 - 1] = times;
 
-    product = multiplyMatrices(&addtorow, entity);
-
-    return product; 
+    return multiplyMatrices(entity, &addtorow, entity); 
 }
 
-matrix toRowEchelonForm(matrix * entity, int verbose){
+int toRowEchelonForm(matrix * result, matrix * entity, int verbose){
     matrix reduced = * entity;
 
     //Hvilken række vi er nået til - skal indkorporeres i et stort loop der wrapper det hele
@@ -312,6 +322,7 @@ matrix toRowEchelonForm(matrix * entity, int verbose){
         int colNumber = reduced.n-1;
         int rowNumber = reduced.m-1;
         for (int j = 0; j < reduced.n; j++){
+            
             for (int i = n; i < reduced.m; i++){
 
                 //If very close to zero, we make it zero.
@@ -324,7 +335,7 @@ matrix toRowEchelonForm(matrix * entity, int verbose){
                         colNumber = j;
                         rowNumber = i;
                         if (n != rowNumber){
-                            reduced = interchangeRows(&reduced, n+1, rowNumber+1);
+                            interchangeRows(&reduced, n+1, rowNumber+1);
                             if (verbose){
                                 printf("Interchange rows %i and %i: \n", n+1, rowNumber+1);
                                 printMatrix(&reduced);
@@ -335,7 +346,7 @@ matrix toRowEchelonForm(matrix * entity, int verbose){
                         //IF != 1 make leading entry == 1
                         if (reduced.matrix[n][colNumber] != 1){
                             float factor = 1/(reduced.matrix[n][colNumber]);
-                            reduced = scaleMatrixRow(&reduced, n+1, factor);
+                            scaleMatrixRow(&reduced, n+1, factor);
                             if (verbose){
                                 printf("Scale row %i with factor %f: \n", n+1, factor);
                                 printMatrix(&reduced);
@@ -354,7 +365,7 @@ matrix toRowEchelonForm(matrix * entity, int verbose){
                                 float colValue = reduced.matrix[k][colNumber];
                                 float multiple = (-colValue)/pivotValue;
 
-                                reduced = addXTimesRowToRow(&reduced, multiple, n+1, k+1);
+                                addXTimesRowToRow(&reduced, multiple, n+1, k+1);
                                 if (verbose){
                                     printf("Add %f times row %i to row %i: \n", multiple, n+1, k+1);
                                     printMatrix(&reduced);
@@ -368,10 +379,11 @@ matrix toRowEchelonForm(matrix * entity, int verbose){
         }
     }   
 
-    return reduced;
+    * result = reduced;
+    return 1;
 }
 
-matrix toReducedRowEchelonForm(matrix * entity, int verbose){
+int toReducedRowEchelonForm(matrix * result, matrix * entity, int verbose){
     matrix reduced = * entity;
     //Loop from bottom of matrix and up
     for (int n = reduced.m-1; n >= 0; n--){
@@ -397,7 +409,7 @@ matrix toReducedRowEchelonForm(matrix * entity, int verbose){
                         float colValue = reduced.matrix[j][i];
                         float multiple = -(colValue);
 
-                        reduced = addXTimesRowToRow(&reduced, multiple, n+1, j+1);
+                        addXTimesRowToRow(&reduced, multiple, n+1, j+1);
 
                         if (verbose){
                             printf("Add %f times row %i to row %i: \n", multiple, n+1, j+1);
@@ -412,28 +424,35 @@ matrix toReducedRowEchelonForm(matrix * entity, int verbose){
             }
         }
     }
-    return reduced;
+    * result = reduced;
+    return 1;
 }
 
-matrix inverseOfMatrix(matrix * entity){
-    matrix inverse;
-    inverse.m = entity->m;
-    inverse.n = entity->n;
+int inverseOfMatrix(matrix * result, matrix * entity){
 
-    matrix identity = identityMatrix(inverse.m, inverse.n);
-    matrix AI       = concatMatrices(entity, &identity);
-    matrix temp     = toRowEchelonForm(&AI, 0);
-    matrix RB       = toReducedRowEchelonForm(&temp, 0);
+    result->m = entity->m;
+    result->n = entity->n;
 
-    for (int i = 0; i < RB.m; i++){
-        for (int j = 0; j < RB.n; j++){
-            if (j >= inverse.n){
-                inverse.matrix[i][j-inverse.n] = RB.matrix[i][j];
+    matrix identity;
+    identityMatrix(&identity, result->m, result->n);
+    
+    matrix AI;
+
+    concatMatrices(&AI, entity, &identity);
+
+    toRowEchelonForm(&AI, &AI, 0);
+
+    toReducedRowEchelonForm(&AI, &AI, 0);
+
+    for (int i = 0; i < AI.m; i++){
+        for (int j = 0; j < AI.n; j++){
+            if (j >= result->n){
+                result->matrix[i][j-result->n] = AI.matrix[i][j];
             }
         }
     }
 
-    return inverse;
+    return 1;
 }
 
 int matrixRank(matrix * entity){
@@ -471,26 +490,25 @@ float twoXtwoDeterminat(matrix * entity){
     return (a*d)-(b*c);
 }
 
-matrix deleteIJ(matrix * entity, int row, int col){
-    matrix sub;
-    sub.n = entity->n-1;
-    sub.m = entity->m-1;
+int deleteIJ(matrix * result, matrix * entity, int row, int col){
+    result->n = entity->n-1;
+    result->m = entity->m-1;
 
     //i1 = taeller for sub
     //i2 = taeller for entity
 
-    for (int i1 = 0, i2 = 0; i1 < sub.n || i2 < entity->n; i2++){
+    for (int i1 = 0, i2 = 0; i1 < result->n || i2 < entity->n; i2++){
         if (i2 != row-1){
-            for (int j1 = 0, j2 = 0; j1 < sub.m || j2 < entity->m; j2++){
+            for (int j1 = 0, j2 = 0; j1 < result->m || j2 < entity->m; j2++){
                 if (j2 != col-1){
-                    sub.matrix[i1][j1] = entity->matrix[i2][j2];
+                    result->matrix[i1][j1] = entity->matrix[i2][j2];
                     j1++;
                 }
             }
             i1++;
         }
     }
-    return sub;
+    return 1;
 }
 
 float cofactorExpansion(matrix * entity, int row){
@@ -506,7 +524,7 @@ float cofactorExpansion(matrix * entity, int row){
         } else {
             sign = -1;
         }
-        sub = deleteIJ(entity, row, i+1);
+        deleteIJ(&sub, entity, row, i+1);
 
         if (sub.n == 2){
             detSub = twoXtwoDeterminat(&sub);

@@ -12,8 +12,16 @@
 TODO + BUGS + DIV.
 ==================
     (X) Logge til JSON! :D
+    ( ) Klar seperation imellem logik og output.. ma3.c er rodet!!
     ( ) Alt egenvektor og egenværdi-halløjet
     ( ) Måske finde en cool måde at lave sets på?
+    ( ) Ny struktur forslået af Jens: Istedet for at returnere matrix,
+        så skal returværdien være til at se hvordan det gik.
+        Dvs. at funktionerne i stedet skal tage en pointer til en matrix,
+        hvor resultatet så bliver gemt, i stedet for at returnere en matrix.
+        Tænk fil-operationer.
+    ( ) Defensivt: Tjek på om det er en 0x0 matrix. Tjek på dimensionerne + andet gøgl.
+    ( ) Defensivt: Flere tjeks i ParseInput, og generelt bedre CLI - mere fejlhåndtering.
 */
 
 #include <stdio.h>
@@ -68,25 +76,25 @@ int main(int argc, char *argv[]){
 
         if (strstr(argv[1], "R")){
             if (file){
-                input = parseInput(argv[2], 1);
+                parseInput(&input, argv[2], 1);
             } else {
-                input = parseInput(argv[2], 0);
+                parseInput(&input, argv[2], 0);
             }
             outputRref(&input, all, timer);
 
         } else if (strstr(argv[1], "I")){
             if (file){
-                input = parseInput(argv[2], 1);
+                parseInput(&input, argv[2], 1);
             } else {
-                input = parseInput(argv[2], 0);
+                parseInput(&input, argv[2], 0);
             }
             outputInverse(&input, all, timer);
 
         } else if (strstr(argv[1], "D")){
             if (file){
-                input = parseInput(argv[2], 1);
+                parseInput(&input, argv[2], 1);
             } else {
-                input = parseInput(argv[2], 0);
+                parseInput(&input, argv[2], 0);
             }
             outputDet(&input, all, timer);
         } else {
@@ -102,8 +110,12 @@ int timeNowUsec(){
     //Struct for holding elapsed time!
     struct timeval now;
 
+    //Tager pointers til en timeval struct og en timezone struct
+    //Og sætter i timeval tiden i sekunder og microsekunder siden EPOCH!
+    //Lad den sidste parameter være NULL, den skal vi ikke bruge til noget.
     gettimeofday(&now, NULL);
 
+    //Returner fra vores timeval struct "now" tiden kun i microsekunder, siden EPOCH!
     return (now.tv_sec) * 1000000 + (now.tv_usec);
 }
 
@@ -111,25 +123,28 @@ unsigned long timestampNow(){
 
     char timestamp[32];
 
-    //Epoch time datatype!
+    //Epoch time datatype, holds seconds since Epoch
     time_t currentTime;
 
-    //A calendar struct!
+    //A calendar struct, containing tm_sec, tm_min, tm_hour... (all int)
     struct tm * ts;
     
-    //Grab current Epoch time ->
+    //Grab current Epoch-time (time returns time since Epoch)
     currentTime = time(NULL);
 
-    //Turn it into localtime and set calendar struct = it
+    //Turn ts into localtime, relative to users timezone, using currentTime
     ts = localtime(&currentTime);
 
     //Remember its calendar time => Add +1 to month, +1900 to year
+    //sprintf functions as printf, except the result is not displayed, but saved in the first parameter!
     sprintf(timestamp,"%02i%02i%i%02i%02i%02i", ts->tm_mday, ts->tm_mon+1, ts->tm_year+1900, ts->tm_hour, ts->tm_min, ts->tm_sec);
+
 
     //We first make a char array with the timestamp, then turn it into an unsigned long.
     //This may seem stupid, since we need to turn it back into a char array for later use,
     //but I really don't like the idea of having to set a global variable, for just holding a timestamp!
 
+    //String-to-unsigned-long: takes the string, a pointer to store invalid chars, and the base.
     return strtoul(timestamp, NULL, 10);
 }
 
@@ -147,9 +162,9 @@ int outputRref(matrix * entity, int all, int timer){
     matrix rowEchelonForm;
 
     if (all){
-        rowEchelonForm = toRowEchelonForm(entity, 1);
+        toRowEchelonForm(&rowEchelonForm, entity, 1);
     } else {
-        rowEchelonForm = toRowEchelonForm(entity, 0);
+        toRowEchelonForm(&rowEchelonForm, entity, 0);
     }
 
     if (all){
@@ -162,9 +177,9 @@ int outputRref(matrix * entity, int all, int timer){
     matrix reducedRowEchelonForm;
 
     if (all){
-        reducedRowEchelonForm = toReducedRowEchelonForm(&rowEchelonForm, 1);
+        toReducedRowEchelonForm(&reducedRowEchelonForm, &rowEchelonForm, 1);
     } else {
-        reducedRowEchelonForm = toReducedRowEchelonForm(&rowEchelonForm, 0);
+        toReducedRowEchelonForm(&reducedRowEchelonForm, &rowEchelonForm, 0);
     }
     
     int t2    = timeNowUsec();
@@ -207,7 +222,8 @@ int outputInverse(matrix * entity, int all, int timer){
 
     int t1 = timeNowUsec();
 
-    matrix inverse = inverseOfMatrix(entity);
+    matrix inverse;
+    inverseOfMatrix(&inverse, entity);
 
     int t2    = timeNowUsec();
     int tDiff = t2-t1;
@@ -270,7 +286,7 @@ int logToJSON(matrix * input, matrix * output, int runtime, char * tag){
     unsigned long timestamp = timestampNow();
     char filepath[32];
     
-    sprintf(filepath,"%lu.json", timestamp);
+    sprintf(filepath,"logs/%lu.json", timestamp);
 
     FILE * file = fopen(filepath,"a");
 
