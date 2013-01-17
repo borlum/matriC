@@ -112,11 +112,11 @@ int fprintMatrix(FILE * file, matrix * entity){
 
         for(int j = 0; j < entity->n; j++){
             if (entity->matrix[i][j] < 0){
-                if(!fprintf(file, " %f  ", entity->matrix[i][j])){
+                if(!fprintf(file, " %7.3f ", entity->matrix[i][j])){
                     return 0;
                 }
             } else {
-                if(!fprintf(file, "  %f  ", entity->matrix[i][j])){
+                if(!fprintf(file, " %7.3f ", entity->matrix[i][j])){
                     return 0;
                 }
             }
@@ -136,8 +136,6 @@ float dotProduct(int row, int col, matrix * entity1, matrix * entity2){
     }
     return result;
 }
-
-//Forslået ny struktur
 
 int concatMatrices(matrix * result, matrix * entity1, matrix * entity2){
     
@@ -206,6 +204,11 @@ int transposeMatrix(matrix * transpose, matrix * entity){
 }
 
 int multiplyMatrices(matrix * product, matrix * entity1, matrix * entity2){
+
+    if (entity1->n != entity2->m){
+        return 0;
+    }
+
     product->m = entity1->m;
     product->n = entity2->n;
 

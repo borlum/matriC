@@ -75,6 +75,7 @@ int main(int argc, char *argv[]){
         }
 
         if (strstr(argv[1], "R")){
+
             if (file){
                 parseInput(&input, argv[2], 1);
             } else {
@@ -115,7 +116,7 @@ int timeNowUsec(){
     //Lad den sidste parameter være NULL, den skal vi ikke bruge til noget.
     gettimeofday(&now, NULL);
 
-    //Returner fra vores timeval struct "now" tiden kun i microsekunder, siden EPOCH!
+    //Returner fra vores timeval struct, "now", tiden kun i microsekunder, siden EPOCH!
     return (now.tv_sec) * 1000000 + (now.tv_usec);
 }
 
