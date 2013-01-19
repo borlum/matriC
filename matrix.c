@@ -41,10 +41,25 @@ int parseInput(matrix * output, char * input, int isFile){
 
     char * parsed = NULL;
     char delims[] = " ][";
+
+    //Check if containing "][; "
+
     if (isFile){
-        parsed = strtok(fileStr, delims);
+
+        if (strstr(fileStr, "[") && strstr(fileStr, "]") && strstr(fileStr, ";") && strstr(fileStr, " ")){
+            parsed = strtok(fileStr, delims);
+        } else {
+            printf("Failed... Not a parseable string!\n");
+            return 0;
+        }
+
     } else {
-        parsed = strtok(argStr, delims);
+        if (strstr(argStr, "[") && strstr(argStr, "]") && strstr(argStr, ";") && strstr(argStr, " ")){
+            parsed = strtok(argStr, delims);
+        } else {
+            printf("Failed... Not a parseable string!\n");
+            return 0;
+        }
     }
 
     int row    = 0;

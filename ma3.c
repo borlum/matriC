@@ -77,27 +77,63 @@ int main(int argc, char *argv[]){
         if (strstr(argv[1], "R")){
 
             if (file){
-                parseInput(&input, argv[2], 1);
+
+                if (parseInput(&input, argv[2], 1)){
+                    outputRref(&input, all, timer);
+                } else {
+                    return 0;
+                }
+
             } else {
-                parseInput(&input, argv[2], 0);
+
+                if (parseInput(&input, argv[2], 0)){
+                    outputRref(&input, all, timer);
+                } else {
+                    return 0;
+                }
+
             }
-            outputRref(&input, all, timer);
 
         } else if (strstr(argv[1], "I")){
+
             if (file){
-                parseInput(&input, argv[2], 1);
+
+                if (parseInput(&input, argv[2], 1)){
+                    outputInverse(&input, all, timer);
+                } else {
+                    return 0;
+                }
+
             } else {
-                parseInput(&input, argv[2], 0);
+
+                if (parseInput(&input, argv[2], 0)){
+                    outputInverse(&input, all, timer);
+                } else {
+                    return 0;
+                }
+
             }
-            outputInverse(&input, all, timer);
 
         } else if (strstr(argv[1], "D")){
+
             if (file){
-                parseInput(&input, argv[2], 1);
+
+                if (parseInput(&input, argv[2], 1)){
+                    outputDet(&input, all, timer);
+                } else {
+                    return 0;
+                }
+
             } else {
-                parseInput(&input, argv[2], 0);
+
+                if (parseInput(&input, argv[2], 0)){
+                    outputDet(&input, all, timer);
+                } else {
+                    return 0;
+                }
+
             }
-            outputDet(&input, all, timer);
+
         } else {
             printf("%s\n", "matriC needs a primary function specified as an argument:");
             printf("%s\n", "    -> R (reduced row echelon form)");
