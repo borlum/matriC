@@ -23,13 +23,13 @@ int parseInput(matrix * output, char * input, int isFile){
         //Open file for reading
         file = fopen(input, "r");
         if (file == NULL){
-            printf("%s\n", "matriC could not find the file you specified.");
+            printf("matriC could not find the file \"%s\".\n", input);
             return 0;
         }
 
         pStr = fgets(fileStr, 199, file);
         if (pStr == NULL){
-            printf("%s\n", "matriC found the file to be empty.");
+            printf("matriC found the file, \"%s\",to be empty.", input);
             return 0;
         }
 
@@ -49,7 +49,7 @@ int parseInput(matrix * output, char * input, int isFile){
         if (strstr(fileStr, "[") && strstr(fileStr, "]") && strstr(fileStr, ";") && strstr(fileStr, " ")){
             parsed = strtok(fileStr, delims);
         } else {
-            printf("Failed... Not a parseable string!\n");
+            printf("FAILED: \"%s\" is not a parseable string!\n", fileStr);
             return 0;
         }
 
@@ -57,14 +57,13 @@ int parseInput(matrix * output, char * input, int isFile){
         if (strstr(argStr, "[") && strstr(argStr, "]") && strstr(argStr, ";") && strstr(argStr, " ")){
             parsed = strtok(argStr, delims);
         } else {
-            printf("Failed... Not a parseable string!\n");
+            printf("FAILED: \"%s\" is not a parseable string!\n", argStr);
             return 0;
         }
     }
 
     int row    = 0;
     int col    = 0;
-    
     int maxCol = 0;
 
     while(parsed != NULL) {

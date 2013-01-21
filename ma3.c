@@ -45,12 +45,13 @@ int outputDet(matrix * entity, int all, int timer);
 int logToJSON(matrix * input, matrix * output, int runtime, char * tag);
 
 int main(int argc, char *argv[]){
-    int timer = 0;
-    int all   = 0;
-    int file  = 0;
+    int options = 0;
+    int timer   = 0;
+    int all     = 0;
+    int file    = 0;
     matrix input;
 
-    if (argc < 2){
+    if (argc <= 2){
         printf("%s\n", "matriC needs additional arguments!");
         printf("%s\n", "Specify a primary function as an argument:");
         printf("%s\n", "    -> R (reduced row echelon form)");
@@ -62,19 +63,29 @@ int main(int argc, char *argv[]){
         printf("%s\n", "    -> f (specify a file instead of inline matrix)");
     } else {
 
-        if (strstr(argv[1], "t")){
+        if (argv[1][0] == '-'){
+            options = 1;
+        } else {
+            if (argc > 2){
+                printf("%s\n", "With no options specified, you have to many arguments.");
+                printf("%s\n", "Remember the syntax for options: ma3c -(R/I/D) input_here.");
+                return 0;
+            }
+        }
+
+        if (strstr(argv[1], "t") && options == 1){
             timer = 1;
         }
 
-        if (strstr(argv[1], "all")){
+        if (strstr(argv[1], "all") && options == 1){
             all = 1;
         }
 
-        if (strstr(argv[1], "f")){
+        if (strstr(argv[1], "f") && options == 1){
             file = 1;
         }
 
-        if (strstr(argv[1], "R")){
+        if ((strstr(argv[1], "R") && options == 1) || options == 0){
 
             if (file){
 
@@ -86,7 +97,14 @@ int main(int argc, char *argv[]){
 
             } else {
 
-                if (parseInput(&input, argv[2], 0)){
+                if (options == 0 && parseInput(&input, argv[1], 0)){
+                    outputRref(&input, all, timer);
+                } else {
+                    return 0;
+                }
+
+
+                if (options == 1 && parseInput(&input, argv[2], 0)){
                     outputRref(&input, all, timer);
                 } else {
                     return 0;
@@ -199,9 +217,13 @@ int outputRref(matrix * entity, int all, int timer){
     matrix rowEchelonForm;
 
     if (all){
-        toRowEchelonForm(&rowEchelonForm, entity, 1);
+        if(!toRowEchelonForm(&rowEchelonForm, entity, 1)){
+            return 0;
+        }
     } else {
-        toRowEchelonForm(&rowEchelonForm, entity, 0);
+        if(!toRowEchelonForm(&rowEchelonForm, entity, 0)){
+            return 0;
+        }
     }
 
     if (all){
@@ -214,9 +236,13 @@ int outputRref(matrix * entity, int all, int timer){
     matrix reducedRowEchelonForm;
 
     if (all){
-        toReducedRowEchelonForm(&reducedRowEchelonForm, &rowEchelonForm, 1);
+        if(!toReducedRowEchelonForm(&reducedRowEchelonForm, &rowEchelonForm, 1)){
+            return 0;
+        }
     } else {
-        toReducedRowEchelonForm(&reducedRowEchelonForm, &rowEchelonForm, 0);
+        if(!toReducedRowEchelonForm(&reducedRowEchelonForm, &rowEchelonForm, 0)){
+            return 0;
+        }
     }
     
     int t2    = timeNowUsec();
@@ -260,7 +286,9 @@ int outputInverse(matrix * entity, int all, int timer){
     int t1 = timeNowUsec();
 
     matrix inverse;
-    inverseOfMatrix(&inverse, entity);
+    if(!inverseOfMatrix(&inverse, entity)){
+        return 0;
+    }
 
     int t2    = timeNowUsec();
     int tDiff = t2-t1;
@@ -328,7 +356,7 @@ int logToJSON(matrix * input, matrix * output, int runtime, char * tag){
     FILE * file = fopen(filepath,"a");
 
     if (file == NULL) {
-        printf("File does exist!");
+        printf("Can't find file %s", filepath);
         return 0;
     }
 
